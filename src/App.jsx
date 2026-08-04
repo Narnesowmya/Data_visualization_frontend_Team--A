@@ -1,9 +1,9 @@
-import EventTable from "./components/EventTable";
+import EventTrendGraph from "./components/EventTrendGraph";
 
 function App() {
   return (
     <div>
-      <EventTable />
+      <EventTrendGraph />
     </div>
   );
 }
