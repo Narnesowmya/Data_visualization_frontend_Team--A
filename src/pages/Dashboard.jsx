@@ -1,6 +1,7 @@
 import { Box, Typography } from '@mui/material'
 import KpiCards from '../components/KpiCards.jsx'
-import AnomalyChart from '../components/AnomalyChart'
+import AnomalyChart from '../components/AnomalyChart.jsx'
+import ConfidenceScoreChart from '../charts/ConfidenceScoreChart.jsx'
 
 export default function Dashboard() {
   return (
@@ -35,6 +36,8 @@ export default function Dashboard() {
       <KpiCards />
 
       <AnomalyChart />
+
+      <ConfidenceScoreChart />
     </Box>
   )
 }
