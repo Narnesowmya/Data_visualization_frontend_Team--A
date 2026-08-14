@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material'
 import KpiCards from '../components/KpiCards.jsx'
+import AnomalyChart from '../components/AnomalyChart'
 
 export default function Dashboard() {
   return (
@@ -10,7 +11,6 @@ export default function Dashboard() {
         bgcolor: 'background.default',
       }}
     >
-      {/* Dashboard Header */}
       <Box sx={{ mb: 3 }}>
         <Typography
           variant="h4"
@@ -32,8 +32,9 @@ export default function Dashboard() {
         </Typography>
       </Box>
 
-      {/* KPI Cards */}
       <KpiCards />
+
+      <AnomalyChart />
     </Box>
   )
 }
