@@ -1,11 +1,7 @@
-import EventTrendGraph from "./components/EventTrendGraph";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
-  return (
-    <div>
-      <EventTrendGraph />
-    </div>
-  );
+  return <Dashboard />;
 }
 
 export default App;
