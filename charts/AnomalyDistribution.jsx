@@ -7,16 +7,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
-  { name: "Critical", value: 15 },
-  { name: "High", value: 30 },
-  { name: "Medium", value: 35 },
-  { name: "Low", value: 20 },
-];
+const COLORS = ["#22c55e", "#f97316", "#ef4444"];
 
-const COLORS = ["#ef4444", "#f97316", "#eab308", "#22c55e"];
-
-function AnomalyDistribution() {
+function AnomalyDistribution({ data = [] }) {
   return (
     <div
       style={{
