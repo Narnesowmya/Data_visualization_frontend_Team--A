@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login.jsx'
 import Dashboard from './pages/Dashboard.jsx'
+import SecurityEvents from './pages/SecurityEvents.jsx'
 
 function EmptyPage({ title }) {
     return (
@@ -32,7 +33,7 @@ function App() {
                 {/* Dashboard sub-pages */}
                 <Route
                     path="events"
-                    element={<EmptyPage title="Security Events" />}
+                    element={<SecurityEvents />}
                 />
 
                 <Route
