@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react'
 import { Box, Typography, Paper, Chip, CircularProgress } from '@mui/material'
 import { FiShield, FiTrendingUp } from 'react-icons/fi'
-import { getAnalyticsData, getEvents } from '../services/api.js'
+import { getAnalyticsData, getEvents, getPredictions } from '../services/api.js'
 import { SEVERITY_COLORS } from '../theme/socTheme.js'
+import ThreatTable from '../components/ThreatTable.jsx'
 
 export default function ThreatIntelligence() {
     const [analytics, setAnalytics] = useState(null)
     const [highRiskEvents, setHighRiskEvents] = useState([])
+    const [predictions, setPredictions] = useState([])
     const [loading, setLoading] = useState(true)
+    const [predictionsLoading, setPredictionsLoading] = useState(true)
     const [error, setError] = useState(null)
 
     useEffect(() => {
         setLoading(true)
+        setPredictionsLoading(true)
+        
         Promise.all([
             getAnalyticsData(),
             getEvents({ severity: 'Critical' })
@@ -23,6 +28,17 @@ export default function ThreatIntelligence() {
             })
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false))
+
+        getPredictions()
+            .then((predData) => {
+                const records = predData?.predictions || predData?.data || (Array.isArray(predData) ? predData : []);
+                setPredictions(records)
+            })
+            .catch((err) => {
+                console.error('Failed to load threat predictions:', err);
+                setPredictions([]);
+            })
+            .finally(() => setPredictionsLoading(false))
     }, [])
 
     if (loading) {
@@ -102,6 +118,7 @@ export default function ThreatIntelligence() {
                 elevation={0}
                 sx={{
                     p: 3,
+                    mb: 3,
                     backgroundColor: 'rgba(18, 17, 31, 0.75)',
                     backdropFilter: 'blur(16px)',
                     border: '1px solid rgba(34, 211, 238, 0.15)',
@@ -155,6 +172,14 @@ export default function ThreatIntelligence() {
                     </Box>
                 )}
             </Paper>
+
+            {/* AI Threat Predictions Section */}
+            <Box sx={{ mt: 4 }}>
+                <Typography variant="h5" sx={{ fontFamily: '"Sora", sans-serif', fontWeight: 700, color: '#F8FAFC', mb: 2 }}>
+                    AI Threat Analysis & Predictions
+                </Typography>
+                <ThreatTable predictions={predictions} loading={predictionsLoading} />
+            </Box>
         </Box>
     )
 }
