@@ -4,23 +4,7 @@ import Dashboard from './pages/Dashboard.jsx'
 import SecurityEvents from './pages/SecurityEvents.jsx'
 import ThreatIntelligence from './pages/ThreatIntelligence.jsx'
 import Vulnerabilities from './pages/Vulnerabilities.jsx'
-
-function EmptyPage({ title }) {
-    return (
-        <div
-            style={{
-                padding: '40px',
-                color: '#F8FAFC',
-                fontFamily: 'Sora, sans-serif'
-            }}
-        >
-            <h1>{title}</h1>
-            <p style={{ color: '#94A3B8' }}>
-                This section is ready to be connected to the dashboard data.
-            </p>
-        </div>
-    )
-}
+import Analytics from './pages/Analytics.jsx'
 
 function App() {
     return (
@@ -45,7 +29,7 @@ function App() {
                 />
                 <Route
                     path="analytics"
-                    element={<EmptyPage title="Analytics" />}
+                    element={<Analytics />}
                 />
             </Route>
 
