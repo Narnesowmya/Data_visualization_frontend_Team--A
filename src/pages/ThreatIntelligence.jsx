@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Box, Typography, Paper, Chip, CircularProgress } from '@mui/material'
-import { FiShield, FiTrendingUp } from 'react-icons/fi'
+import { Box, Typography, Paper, Chip, CircularProgress, TextField, InputAdornment } from '@mui/material'
+import { FiShield, FiTrendingUp, FiSearch } from 'react-icons/fi'
 import { getAnalyticsData, getEvents, getPredictions } from '../services/api.js'
 import { SEVERITY_COLORS } from '../theme/socTheme.js'
 import ThreatTable from '../components/ThreatTable.jsx'
@@ -9,6 +9,7 @@ export default function ThreatIntelligence() {
     const [analytics, setAnalytics] = useState(null)
     const [highRiskEvents, setHighRiskEvents] = useState([])
     const [predictions, setPredictions] = useState([])
+    const [searchQuery, setSearchQuery] = useState('')
     const [loading, setLoading] = useState(true)
     const [predictionsLoading, setPredictionsLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -178,7 +179,51 @@ export default function ThreatIntelligence() {
                 <Typography variant="h5" sx={{ fontFamily: '"Sora", sans-serif', fontWeight: 700, color: '#F8FAFC', mb: 2 }}>
                     AI Threat Analysis & Predictions
                 </Typography>
-                <ThreatTable predictions={predictions} loading={predictionsLoading} />
+
+                {/* Client-side Event ID Search bar */}
+                <Box sx={{ mb: 2.5, maxWidth: 400 }}>
+                    <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="Search Event ID..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <FiSearch color="#22D3EE" size={16} />
+                                    </InputAdornment>
+                                )
+                            }
+                        }}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                backgroundColor: 'rgba(13, 15, 26, 0.7)',
+                                '& fieldset': {
+                                    borderColor: 'rgba(34, 211, 238, 0.2)',
+                                },
+                                '&:hover fieldset': {
+                                    borderColor: 'rgba(34, 211, 238, 0.4)',
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: '#22D3EE',
+                                },
+                                fontSize: '0.88rem',
+                                borderRadius: '10px'
+                            }
+                        }}
+                    />
+                </Box>
+
+                <ThreatTable
+                    predictions={predictions.filter((pred) => {
+                        if (!searchQuery.trim()) return true;
+                        if (!pred || !pred.event_id) return false;
+                        return pred.event_id.toLowerCase().includes(searchQuery.trim().toLowerCase());
+                    })}
+                    loading={predictionsLoading}
+                />
             </Box>
         </Box>
     )
