@@ -74,11 +74,11 @@ function getRandomDate(daysBack = 14) {
 // Generate 85 realistic mock events sorted by timestamp descending
 export function generateMockEvents() {
   const events = [];
-  
+
   for (let i = 1; i <= 85; i++) {
     const type = EVENT_TYPES[Math.floor(Math.random() * EVENT_TYPES.length)];
     let severity = SEVERITIES[Math.floor(Math.random() * SEVERITIES.length)];
-    
+
     // Weight Critical & High slightly higher for realistic SOC view
     const rand = Math.random();
     if (rand < 0.25) severity = 'Critical';
@@ -91,7 +91,7 @@ export function generateMockEvents() {
     const destIP = '10.0.0.' + Math.floor(Math.random() * 200 + 10);
     const affectedAsset = ASSETS[Math.floor(Math.random() * ASSETS.length)];
     const timestamp = getRandomDate(14);
-    
+
     let baseScore = severity === 'Critical' ? 90 : severity === 'High' ? 75 : severity === 'Medium' ? 50 : 25;
     const aiRiskScore = Math.min(99, Math.max(10, baseScore + Math.floor(Math.random() * 10 - 5)));
 
@@ -115,3 +115,13 @@ export function generateMockEvents() {
 }
 
 export const INITIAL_MOCK_EVENTS = generateMockEvents();
+export const INITIAL_MOCK_VULNERABILITIES = [
+  { id: 'CVE-2024-3809', asset: 'Auth-Gateway-Primary', title: 'Authentication Bypass via JWT Signature Validation', severity: 'Critical', cvss: 9.8, status: 'Open', discoveredDate: '2026-08-10T09:00:00Z', patchAvailable: true },
+  { id: 'CVE-2024-6112', asset: 'DB-Cluster-East', title: 'SQL Injection in Legacy Reporting Module', severity: 'Critical', cvss: 9.1, status: 'In Progress', discoveredDate: '2026-08-12T14:20:00Z', patchAvailable: true },
+  { id: 'CVE-2024-4471', asset: 'Web-Frontend-01', title: 'Cross-Site Scripting in User Profile Fields', severity: 'High', cvss: 7.4, status: 'Open', discoveredDate: '2026-08-14T11:15:00Z', patchAvailable: false },
+  { id: 'CVE-2024-7723', asset: 'VPN-Gateway-02', title: 'Outdated TLS Cipher Suite Support', severity: 'High', cvss: 7.1, status: 'Open', discoveredDate: '2026-08-13T08:45:00Z', patchAvailable: true },
+  { id: 'CVE-2024-2290', asset: 'File-Storage-Cluster', title: 'Insecure Direct Object Reference in File Download API', severity: 'Medium', cvss: 5.9, status: 'In Progress', discoveredDate: '2026-08-11T16:30:00Z', patchAvailable: true },
+  { id: 'CVE-2024-5561', asset: 'Auth-Gateway-Primary', title: 'Missing Rate Limiting on Login Endpoint', severity: 'Medium', cvss: 5.3, status: 'Resolved', discoveredDate: '2026-08-05T10:00:00Z', patchAvailable: true },
+  { id: 'CVE-2024-9034', asset: 'Internal-API-Gateway', title: 'Verbose Error Messages Exposing Stack Traces', severity: 'Low', cvss: 3.1, status: 'Open', discoveredDate: '2026-08-15T13:10:00Z', patchAvailable: false },
+  { id: 'CVE-2024-1188', asset: 'Web-Frontend-01', title: 'Missing Security Headers (CSP, HSTS)', severity: 'Low', cvss: 2.4, status: 'Resolved', discoveredDate: '2026-08-02T09:30:00Z', patchAvailable: true }
+]

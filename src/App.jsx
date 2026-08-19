@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import SecurityEvents from './pages/SecurityEvents.jsx'
+import ThreatIntelligence from './pages/ThreatIntelligence.jsx'
+import Vulnerabilities from './pages/Vulnerabilities.jsx'
 
 function EmptyPage({ title }) {
     return (
@@ -23,34 +25,28 @@ function EmptyPage({ title }) {
 function App() {
     return (
         <Routes>
-
             {/* Login */}
             <Route path="/login" element={<Login />} />
 
             {/* Main Dashboard */}
             <Route path="/dashboard" element={<Dashboard />}>
-
                 {/* Dashboard sub-pages */}
                 <Route
                     path="events"
                     element={<SecurityEvents />}
                 />
-
                 <Route
                     path="threat-intel"
-                    element={<EmptyPage title="Threat Intelligence" />}
+                    element={<ThreatIntelligence />}
                 />
-
                 <Route
                     path="vulnerabilities"
-                    element={<EmptyPage title="Vulnerabilities" />}
+                    element={<Vulnerabilities />}
                 />
-
                 <Route
                     path="analytics"
                     element={<EmptyPage title="Analytics" />}
                 />
-
             </Route>
 
             {/* Default */}
@@ -64,7 +60,6 @@ function App() {
                 path="*"
                 element={<Navigate to="/login" replace />}
             />
-
         </Routes>
     )
 }

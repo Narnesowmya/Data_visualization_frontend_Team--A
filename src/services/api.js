@@ -1,7 +1,6 @@
 import axios from 'axios';
 import AxiosMockAdapter from 'axios-mock-adapter';
-import { INITIAL_MOCK_EVENTS } from './mockData.js';
-
+import { INITIAL_MOCK_EVENTS, INITIAL_MOCK_VULNERABILITIES } from './mockData.js'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_KEY = import.meta.env.VITE_API_KEY;
 const USE_MOCK = !API_BASE_URL;
@@ -110,7 +109,13 @@ if (USE_MOCK) {
     })).reverse();
 
     return [200, { success: true, threatDistribution, topAttackTypes, eventTrend }];
+  })
+  3
+  mock.onGet('/vulnerabilities').reply(() => {
+    return [200, { success: true, count: INITIAL_MOCK_VULNERABILITIES.length, vulnerabilities: INITIAL_MOCK_VULNERABILITIES }]
   });
+
+
 
   mock.onPatch(/\/events\/.+/).reply(config => {
     const eventId = config.url.split('/').pop();
@@ -174,3 +179,7 @@ export const simulateLiveAlert = async () => {
   const response = await apiClient.post('/events/simulate');
   return response.data;
 };
+export const getVulnerabilities = async () => {
+  const response = await apiClient.get('/vulnerabilities')
+  return response.data
+}
