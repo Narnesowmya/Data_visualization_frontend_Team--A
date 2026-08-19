@@ -182,4 +182,14 @@ export const simulateLiveAlert = async () => {
 export const getVulnerabilities = async () => {
   const response = await apiClient.get('/vulnerabilities')
   return response.data
-}
+};
+
+export const getPredictions = async () => {
+  const response = await apiClient.get('/predictions');
+  return response.data;
+};
+
+export const getEventById = async (eventId) => {
+  const response = await apiClient.get(`/predictions/${eventId}`);
+  return response.data;
+};
