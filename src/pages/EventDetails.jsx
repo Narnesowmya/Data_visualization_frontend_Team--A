@@ -8,7 +8,8 @@ import {
   Grid,
   Button,
   CircularProgress,
-  LinearProgress
+  LinearProgress,
+  Divider
 } from '@mui/material';
 import { FiArrowLeft, FiAlertTriangle, FiCpu, FiTrendingUp } from 'react-icons/fi';
 import { getEventById } from '../services/api.js';
@@ -306,6 +307,116 @@ export default function EventDetails() {
             </Box>
           </Grid>
         </Grid>
+
+        <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.08)', my: 4 }} />
+
+        {/* AI Analysis Section */}
+        <Box>
+          <Typography
+            variant="subtitle2"
+            sx={{ color: '#94A3B8', mb: 2, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}
+          >
+            AI Analysis
+          </Typography>
+          <Grid container spacing={2.5}>
+            {/* Prediction */}
+            <Grid item xs={6} sm={4}>
+              <Box sx={{ p: 2, borderRadius: '10px', backgroundColor: 'rgba(13, 15, 26, 0.6)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5, fontWeight: 600 }}>
+                  Prediction
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 700, color: '#22D3EE' }}>
+                  {event.prediction || 'Unknown'}
+                </Typography>
+              </Box>
+            </Grid>
+
+            {/* Threat Type */}
+            <Grid item xs={6} sm={4}>
+              <Box sx={{ p: 2, borderRadius: '10px', backgroundColor: 'rgba(13, 15, 26, 0.6)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5, fontWeight: 600 }}>
+                  Threat Type
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 700, color: '#F8FAFC' }}>
+                  {event.threat_type || 'N/A'}
+                </Typography>
+              </Box>
+            </Grid>
+
+            {/* Severity */}
+            <Grid item xs={6} sm={4}>
+              <Box sx={{ p: 2, borderRadius: '10px', backgroundColor: 'rgba(13, 15, 26, 0.6)', border: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', minHeight: 64 }}>
+                <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5, fontWeight: 600 }}>
+                  Severity
+                </Typography>
+                <Chip
+                  label={event.severity}
+                  size="small"
+                  sx={{
+                    backgroundColor: severityStyle.bg,
+                    color: severityStyle.main,
+                    border: `1px solid ${severityStyle.border}`,
+                    boxShadow: severityStyle.glow,
+                    fontWeight: 800,
+                    fontSize: '0.72rem',
+                    height: 25,
+                    alignSelf: 'flex-start'
+                  }}
+                />
+              </Box>
+            </Grid>
+
+            {/* Confidence % */}
+            <Grid item xs={12} sm={6}>
+              <Box sx={{ p: 2, borderRadius: '10px', backgroundColor: 'rgba(13, 15, 26, 0.6)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                  <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600 }}>
+                    Confidence %
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 800, color: confidenceColor }}>
+                    {typeof event.confidence_score === 'number' ? `${event.confidence_score.toFixed(1)}%` : `${event.confidence_score}%`}
+                  </Typography>
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={event.confidence_score || 0}
+                  sx={{
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: confidenceColor
+                    }
+                  }}
+                />
+              </Box>
+            </Grid>
+
+            {/* Anomaly Score */}
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ p: 2, borderRadius: '10px', backgroundColor: 'rgba(13, 15, 26, 0.6)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5, fontWeight: 600 }}>
+                  Anomaly Score
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 700, color: '#8B5CF6' }}>
+                  {typeof event.anomaly_score === 'number' ? event.anomaly_score.toFixed(3) : event.anomaly_score}
+                </Typography>
+              </Box>
+            </Grid>
+
+            {/* Model Version */}
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ p: 2, borderRadius: '10px', backgroundColor: 'rgba(13, 15, 26, 0.6)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5, fontWeight: 600 }}>
+                  Model Version
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 700, color: '#F8FAFC', fontFamily: 'monospace' }}>
+                  {event.model_version || 'N/A'}
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
       </Paper>
     </Box>
   );
