@@ -261,7 +261,7 @@ export default function Login() {
                   slotProps={{
                     input: {
                       startAdornment: (
-                        <InputAdornment position="start">
+                        <InputAdornment position="start" sx={{ mr: 1.5 }}>
                           <FiUser color="#22D3EE" />
                         </InputAdornment>
                       )
@@ -275,6 +275,16 @@ export default function Login() {
                         boxShadow: '0 0 16px rgba(34, 211, 238, 0.35)',
                         borderColor: '#22D3EE'
                       }
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: '#E2E8F0',
+                      paddingLeft: '4px'
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: '#94A3B8'
+                    },
+                    '& .MuiInputLabel-root.Mui-focused': {
+                      color: '#22D3EE'
                     }
                   }}
                 />
@@ -294,7 +304,7 @@ export default function Login() {
                   slotProps={{
                     input: {
                       startAdornment: (
-                        <InputAdornment position="start">
+                        <InputAdornment position="start" sx={{ mr: 1.5 }}>
                           <Box
                             sx={{
                               display: 'flex',
@@ -325,6 +335,16 @@ export default function Login() {
                         boxShadow: '0 0 16px rgba(139, 92, 246, 0.35)',
                         borderColor: '#8B5CF6'
                       }
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: '#E2E8F0',
+                      paddingLeft: '4px'
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: '#94A3B8'
+                    },
+                    '& .MuiInputLabel-root.Mui-focused': {
+                      color: '#8B5CF6'
                     }
                   }}
                 />

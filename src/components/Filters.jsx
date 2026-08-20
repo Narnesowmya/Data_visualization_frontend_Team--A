@@ -108,7 +108,7 @@ export default function Filters({ filters, onFilterChange, onResetFilters }) {
             slotProps={{
               input: {
                 startAdornment: (
-                  <InputAdornment position="start">
+                  <InputAdornment position="start" sx={{ mr: 1.2 }}>
                     <FiSearch color="#22D3EE" size={16} />
                   </InputAdornment>
                 )
@@ -120,6 +120,14 @@ export default function Filters({ filters, onFilterChange, onResetFilters }) {
                 borderColor: 'rgba(34, 211, 238, 0.2)',
                 fontSize: '0.88rem',
                 borderRadius: '10px'
+              },
+              '& .MuiOutlinedInput-input': {
+                color: '#E2E8F0',
+                paddingLeft: '4px'
+              },
+              '& .MuiOutlinedInput-input::placeholder': {
+                color: '#94A3B8',
+                opacity: 1
               }
             }}
           />
@@ -136,7 +144,13 @@ export default function Filters({ filters, onFilterChange, onResetFilters }) {
                   value={filters.severity}
                   label="Severity"
                   onChange={(e) => onFilterChange('severity', e.target.value)}
-                  sx={{ backgroundColor: 'rgba(13, 15, 26, 0.7)', borderRadius: '10px', fontSize: '0.85rem' }}
+                  sx={{
+                    backgroundColor: 'rgba(13, 15, 26, 0.7)',
+                    borderRadius: '10px',
+                    fontSize: '0.85rem',
+                    color: '#E2E8F0',
+                    '& .MuiSelect-icon': { color: '#94A3B8' }
+                  }}
                 >
                   <MenuItem value="All">All Severities</MenuItem>
                   <MenuItem value="Critical" sx={{ color: SEVERITY_COLORS.Critical.main, fontWeight: 700 }}>
@@ -166,7 +180,13 @@ export default function Filters({ filters, onFilterChange, onResetFilters }) {
                   value={filters.dateRange}
                   label="Timeframe"
                   onChange={(e) => onFilterChange('dateRange', e.target.value)}
-                  sx={{ backgroundColor: 'rgba(13, 15, 26, 0.7)', borderRadius: '10px', fontSize: '0.85rem' }}
+                  sx={{
+                    backgroundColor: 'rgba(13, 15, 26, 0.7)',
+                    borderRadius: '10px',
+                    fontSize: '0.85rem',
+                    color: '#E2E8F0',
+                    '& .MuiSelect-icon': { color: '#94A3B8' }
+                  }}
                 >
                   <MenuItem value="All">All Time</MenuItem>
                   <MenuItem value="24h">Last 24 Hours</MenuItem>
@@ -187,7 +207,13 @@ export default function Filters({ filters, onFilterChange, onResetFilters }) {
               value={filters.eventType}
               label="Event Category"
               onChange={(e) => onFilterChange('eventType', e.target.value)}
-              sx={{ backgroundColor: 'rgba(13, 15, 26, 0.7)', borderRadius: '10px', fontSize: '0.85rem' }}
+              sx={{
+                backgroundColor: 'rgba(13, 15, 26, 0.7)',
+                borderRadius: '10px',
+                fontSize: '0.85rem',
+                color: '#E2E8F0',
+                '& .MuiSelect-icon': { color: '#94A3B8' }
+              }}
             >
               {EVENT_TYPES.map((type) => (
                 <MenuItem key={type} value={type}>
