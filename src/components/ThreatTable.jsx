@@ -17,8 +17,10 @@ import {
 import { FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import { SEVERITY_COLORS } from '../theme/socTheme.js';
 import ConfidenceCard from './ConfidenceCard.jsx';
+import { useNavigate } from 'react-router-dom';
 
 export default function ThreatTable({ predictions = [], loading }) {
+  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [orderBy, setOrderBy] = useState('prediction_timestamp');
@@ -247,7 +249,9 @@ export default function ThreatTable({ predictions = [], loading }) {
                   <TableRow
                     key={pred.event_id}
                     hover
+                    onClick={() => navigate(`/events/${pred.event_id}`)}
                     sx={{
+                      cursor: 'pointer',
                       transition: 'all 0.25s ease',
                       borderLeft: isCritical ? '4px solid #EF4444' : '4px solid transparent',
                       boxShadow: isCritical ? 'inset 4px 0 12px rgba(239, 68, 68, 0.2)' : 'none',
