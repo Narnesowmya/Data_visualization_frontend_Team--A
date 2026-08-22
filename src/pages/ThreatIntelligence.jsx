@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Box, Typography, Paper, Chip, CircularProgress, TextField, InputAdornment } from '@mui/material'
 import { FiShield, FiTrendingUp, FiSearch } from 'react-icons/fi'
-import { getAnalyticsData, getEvents, getPredictions } from '../services/api.js'
+import { getPredictions } from '../services/api.js'
 import { SEVERITY_COLORS } from '../theme/socTheme.js'
 import ThreatTable from '../components/ThreatTable.jsx'
 
@@ -17,29 +17,41 @@ export default function ThreatIntelligence() {
     useEffect(() => {
         setLoading(true)
         setPredictionsLoading(true)
-        
-        Promise.all([
-            getAnalyticsData(),
-            getEvents({ severity: 'Critical' })
-        ])
-            .then(([analyticsData, criticalEvents]) => {
-                setAnalytics(analyticsData)
-                setHighRiskEvents((criticalEvents.events || []).slice(0, 8))
-                setError(null)
-            })
-            .catch((err) => setError(err.message))
-            .finally(() => setLoading(false))
 
         getPredictions()
             .then((predData) => {
                 const records = predData?.predictions || predData?.data || (Array.isArray(predData) ? predData : []);
                 setPredictions(records)
+
+                // 1. Derive topAttackTypes: group predictions by threat_type, count occurrences, sort descending
+                const attackCounts = {};
+                records.forEach(p => {
+                    const type = p.threat_type || 'None';
+                    attackCounts[type] = (attackCounts[type] || 0) + 1;
+                });
+                const topAttackTypes = Object.keys(attackCounts)
+                    .map(type => ({ type, count: attackCounts[type] }))
+                    .sort((a, b) => b.count - a.count);
+                
+                setAnalytics({ topAttackTypes });
+
+                // 2. Derive highRiskEvents: filter same predictions array for severity === 'Critical', take first 8
+                const criticals = records
+                    .filter(p => p.severity === 'Critical')
+                    .slice(0, 8);
+                setHighRiskEvents(criticals);
+
+                setError(null)
             })
             .catch((err) => {
                 console.error('Failed to load threat predictions:', err);
+                setError(err.message);
                 setPredictions([]);
             })
-            .finally(() => setPredictionsLoading(false))
+            .finally(() => {
+                setLoading(false);
+                setPredictionsLoading(false);
+            });
     }, [])
 
     if (loading) {
@@ -139,7 +151,7 @@ export default function ThreatIntelligence() {
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                         {highRiskEvents.map((evt) => (
                             <Box
-                                key={evt.id}
+                                key={evt.event_id}
                                 sx={{
                                     p: 2,
                                     borderRadius: '10px',
@@ -152,11 +164,16 @@ export default function ThreatIntelligence() {
                             >
                                 <Box>
                                     <Typography sx={{ color: '#F8FAFC', fontWeight: 700, fontSize: '0.9rem' }}>
-                                        {evt.eventType}
+                                        {evt.threat_type}
                                     </Typography>
-                                    <Typography sx={{ color: '#94A3B8', fontSize: '0.8rem', fontFamily: 'monospace' }}>
-                                        {evt.sourceIP} → {evt.destinationIP}
-                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 0.5 }}>
+                                        <Typography sx={{ color: '#94A3B8', fontSize: '0.8rem', fontFamily: 'monospace' }}>
+                                            {evt.event_id}
+                                        </Typography>
+                                        <Typography sx={{ color: '#E2E8F0', fontSize: '0.8rem' }}>
+                                            ({evt.confidence_score}% confidence)
+                                        </Typography>
+                                    </Box>
                                 </Box>
                                 <Chip
                                     label={evt.severity}

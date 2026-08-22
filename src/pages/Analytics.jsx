@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Box, Typography, Paper, CircularProgress } from '@mui/material'
 import { FiBarChart2 } from 'react-icons/fi'
-import { getAnalyticsData } from '../services/api.js'
+import { getPredictions } from '../services/api.js'
 import { SEVERITY_COLORS } from '../theme/socTheme.js'
 
 export default function Analytics() {
@@ -10,10 +10,46 @@ export default function Analytics() {
     const [error, setError] = useState(null)
 
     useEffect(() => {
-        getAnalyticsData()
+        getPredictions()
             .then((data) => {
-                setAnalytics(data)
-                setError(null)
+                const predictionsList = data?.predictions || [];
+
+                // 1. threatDistribution: count of records per severity value
+                const threatDistribution = { Critical: 0, High: 0, Medium: 0, Low: 0 };
+                predictionsList.forEach(p => {
+                    const severity = p.severity;
+                    if (severity in threatDistribution) {
+                        threatDistribution[severity]++;
+                    }
+                });
+
+                // 2. topAttackTypes: group predictions by threat_type, count occurrences, sort descending by count
+                const attackCounts = {};
+                predictionsList.forEach(p => {
+                    const type = p.threat_type || 'None';
+                    attackCounts[type] = (attackCounts[type] || 0) + 1;
+                });
+                const topAttackTypes = Object.keys(attackCounts)
+                    .map(type => ({ type, count: attackCounts[type] }))
+                    .sort((a, b) => b.count - a.count);
+
+                // 3. eventTrend: group predictions by the date portion of prediction_timestamp, count per day, sort chronologically ascending
+                const dailyCounts = {};
+                predictionsList.forEach(p => {
+                    const dateObj = new Date(p.prediction_timestamp);
+                    const dateKey = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()).getTime();
+                    dailyCounts[dateKey] = (dailyCounts[dateKey] || 0) + 1;
+                });
+                const eventTrend = Object.keys(dailyCounts)
+                    .map(Number)
+                    .sort((a, b) => a - b)
+                    .map(timestamp => {
+                        const date = new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        return { date, count: dailyCounts[timestamp] };
+                    });
+
+                setAnalytics({ threatDistribution, topAttackTypes, eventTrend });
+                setError(null);
             })
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false))

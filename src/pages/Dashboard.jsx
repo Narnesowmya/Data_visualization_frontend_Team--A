@@ -15,8 +15,7 @@ import Sidebar from '../components/Sidebar.jsx';
 import Navbar from '../components/Navbar.jsx';
 import KpiCards from '../components/KpiCards.jsx';
 import Filters from '../components/Filters.jsx';
-import EventTable from '../components/EventTable.jsx';
-import EventDetailDrawer from '../components/EventDetailDrawer.jsx';
+import ThreatTable from '../components/ThreatTable.jsx';
 
 import ThreatDistributionChart from '../charts/ThreatDistributionChart.jsx';
 import EventTrendChart from '../charts/EventTrendChart.jsx';
@@ -26,11 +25,9 @@ import ConfidenceScoreChart from '../charts/ConfidenceScoreChart.jsx';
 import NetworkTopologyBackground from '../components/NetworkTopologyBackground.jsx';
 
 import {
-  getEvents,
-  getKpiStats,
-  getAnalyticsData,
-  updateEventStatus,
-  simulateLiveAlert
+  getPredictions,
+  getThreatSummary,
+  getModelPerformance
 } from '../services/api.js';
 
 export default function Dashboard() {
@@ -48,36 +45,97 @@ export default function Dashboard() {
   });
 
   // Data State
-  const [events, setEvents] = useState([]);
+  const [predictions, setPredictions] = useState([]);
   const [stats, setStats] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Detail Drawer & Simulation State
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [isSimulating, setIsSimulating] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
 
     try {
-      const [eventsRes, statsRes, analyticsRes] = await Promise.all([
-        getEvents(filters),
-        getKpiStats(filters),
-        getAnalyticsData(filters)
+      const [predictionsRes, summaryRes, perfRes] = await Promise.all([
+        getPredictions(),
+        getThreatSummary(),
+        getModelPerformance()
       ]);
 
-      setEvents(eventsRes.events || []);
-      setStats(statsRes.stats || null);
-      setAnalytics(analyticsRes || null);
+      const predictionsList = predictionsRes?.predictions || predictionsRes?.data || (Array.isArray(predictionsRes) ? predictionsRes : []);
+      setPredictions(predictionsList);
+
+      const statsObj = {
+        totalEvents: summaryRes.total_predictions ?? 0,
+        anomaliesDetected: summaryRes.suspicious_count ?? 0,
+        normalEvents: summaryRes.normal_count ?? 0,
+        highRiskEvents: summaryRes.severity_breakdown?.High ?? 0,
+        criticalThreats: summaryRes.severity_breakdown?.Critical ?? 0
+      };
+      setStats(statsObj);
+
+      // threatDistribution: use summaryRes.severity_breakdown directly, default any missing key to 0
+      const threatDistribution = {
+        Critical: summaryRes.severity_breakdown?.Critical ?? 0,
+        High: summaryRes.severity_breakdown?.High ?? 0,
+        Medium: summaryRes.severity_breakdown?.Medium ?? 0,
+        Low: summaryRes.severity_breakdown?.Low ?? 0
+      };
+
+      // topAttackTypes: group predictions by threat_type, count, sort descending
+      const attackCounts = {};
+      predictionsList.forEach(p => {
+        const type = p.threat_type || 'None';
+        attackCounts[type] = (attackCounts[type] || 0) + 1;
+      });
+      const topAttackTypes = Object.keys(attackCounts)
+        .map(type => ({ type, count: attackCounts[type] }))
+        .sort((a, b) => b.count - a.count);
+
+      // eventTrend: group predictions by date portion of prediction_timestamp, sort chronologically ascending
+      const dailyCounts = {};
+      predictionsList.forEach(p => {
+        const dateObj = new Date(p.prediction_timestamp);
+        const dateKey = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()).getTime();
+        dailyCounts[dateKey] = (dailyCounts[dateKey] || 0) + 1;
+      });
+      const eventTrend = Object.keys(dailyCounts)
+        .map(Number)
+        .sort((a, b) => a - b)
+        .map(timestamp => {
+          const date = new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          return { date, count: dailyCounts[timestamp] };
+        });
+
+      // confidenceScore: bucket predictions by confidence_score into 5 ranges
+      let veryLow = 0, low = 0, medium = 0, high = 0, veryHigh = 0;
+      predictionsList.forEach(p => {
+        const score = p.confidence_score ?? 0;
+        if (score <= 20) veryLow++;
+        else if (score <= 40) low++;
+        else if (score <= 60) medium++;
+        else if (score <= 80) high++;
+        else veryHigh++;
+      });
+      const confidenceScore = [
+        { label: 'Very Low', score: veryLow },
+        { label: 'Low', score: low },
+        { label: 'Medium', score: medium },
+        { label: 'High', score: high },
+        { label: 'Very High', score: veryHigh }
+      ];
+
+      setAnalytics({
+        threatDistribution,
+        topAttackTypes,
+        eventTrend,
+        confidenceScore
+      });
+
     } catch (err) {
       console.error('Failed fetching Vigilon telemetry data:', err);
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -103,53 +161,32 @@ export default function Dashboard() {
     });
   };
 
-  const handleSelectEvent = (evt) => {
-    setSelectedEvent(evt);
-    setDrawerOpen(true);
-  };
-
-  const handleStatusChange = async (eventId, newStatus) => {
-    try {
-      await updateEventStatus(eventId, newStatus);
-
-      setToastMessage(
-        `Vigilon Incident ${eventId} status updated to ${newStatus}`
-      );
-
-      if (selectedEvent && selectedEvent.id === eventId) {
-        setSelectedEvent((prev) => ({
-          ...prev,
-          status: newStatus
-        }));
-      }
-
-      fetchData();
-    } catch (err) {
-      console.error('Failed to update event status:', err);
-    }
-  };
-
-  const handleSimulateAlert = async () => {
-    setIsSimulating(true);
-
-    try {
-      const res = await simulateLiveAlert();
-
-      setToastMessage(
-        `🚨 VIGILON ALERT INJECTED: ${res.event.eventType} (${res.event.severity}) from ${res.event.sourceIP}`
-      );
-
-      fetchData();
-    } catch (err) {
-      console.error('Failed to simulate live alert:', err);
-    } finally {
-      setIsSimulating(false);
-    }
-  };
-
   const isOverviewTab =
     location.pathname === '/dashboard' ||
     location.pathname === '/dashboard/';
+
+  // Client-side filtering logic for predictions array
+  const filteredPredictions = predictions.filter(pred => {
+    // 1. Severity filter
+    if (filters.severity && filters.severity !== 'All') {
+      if (pred.severity !== filters.severity) return false;
+    }
+
+    // 2. Event Type filter (mapped to threat_type)
+    if (filters.eventType && filters.eventType !== 'All') {
+      if (pred.threat_type !== filters.eventType) return false;
+    }
+
+    // 3. Search IP/Asset/Event ID filter (mapped to event_id / threat_type substring search)
+    if (filters.searchIp && filters.searchIp.trim() !== '') {
+      const term = filters.searchIp.trim().toLowerCase();
+      const idMatch = pred.event_id?.toLowerCase().includes(term);
+      const typeMatch = pred.threat_type?.toLowerCase().includes(term);
+      if (!idMatch && !typeMatch) return false;
+    }
+
+    return true;
+  });
 
   return (
     <Box
@@ -192,8 +229,6 @@ export default function Dashboard() {
         {/* Navbar */}
         <Navbar
           handleDrawerToggle={handleDrawerToggle}
-          onSimulateAlert={handleSimulateAlert}
-          isSimulating={isSimulating}
         />
 
         {/* Dashboard Content */}
@@ -453,7 +488,7 @@ export default function Dashboard() {
                   </Box>
                 </Grid>
 
-                {/* Event Table */}
+                {/* Threat Predictions Table */}
                 <Grid
                   item
                   xs={12}
@@ -468,11 +503,9 @@ export default function Dashboard() {
                       overflowX: 'auto'
                     }}
                   >
-                    <EventTable
-                      events={events}
+                    <ThreatTable
+                      predictions={filteredPredictions}
                       loading={loading}
-                      onSelectEvent={handleSelectEvent}
-                      onStatusChange={handleStatusChange}
                     />
                   </Box>
                 </Grid>
@@ -481,51 +514,17 @@ export default function Dashboard() {
           ) : (
             <Outlet
               context={{
-                events,
+                predictions,
                 stats,
                 analytics,
                 loading,
                 filters,
                 handleFilterChange,
-                handleResetFilters,
-                handleSelectEvent,
-                handleStatusChange
+                handleResetFilters
               }}
             />
           )}
         </Box>
-
-        {/* Telemetry Detail Drawer */}
-        <EventDetailDrawer
-          open={drawerOpen}
-          event={selectedEvent}
-          onClose={() => setDrawerOpen(false)}
-          onStatusChange={handleStatusChange}
-        />
-
-        {/* Toast Notification */}
-        <Snackbar
-          open={Boolean(toastMessage)}
-          autoHideDuration={4000}
-          onClose={() => setToastMessage('')}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right'
-          }}
-        >
-          <Alert
-            severity="info"
-            onClose={() => setToastMessage('')}
-            sx={{
-              backgroundColor: '#141326',
-              color: '#F8FAFC',
-              border: '1px solid #22D3EE',
-              boxShadow: '0 8px 32px rgba(34, 211, 238, 0.3)'
-            }}
-          >
-            {toastMessage}
-          </Alert>
-        </Snackbar>
       </Box>
     </Box>
   );
