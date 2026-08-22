@@ -11,7 +11,7 @@ export const apiClient = axios.create({
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
-    ...(USE_MOCK ? {} : { 'x-api-key': API_KEY }) // confirm header name with backend
+    // 'x-api-key': API_KEY // TODO: confirm with backend if auth is required
   }
 });
 
@@ -22,6 +22,189 @@ if (USE_MOCK) {
 
   // In-memory data store for live status updates/simulated live alerts
   let mockEventsDatabase = [...INITIAL_MOCK_EVENTS];
+
+  const MOCK_PREDICTIONS = [
+    {
+      event_id: "EVT-2001",
+      prediction: "Suspicious",
+      threat_type: "Brute Force",
+      confidence_score: 94.2,
+      anomaly_score: 0.892,
+      severity: "Critical",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-22T10:15:30Z"
+    },
+    {
+      event_id: "EVT-2002",
+      prediction: "Normal",
+      threat_type: "None",
+      confidence_score: 99.1,
+      anomaly_score: -0.124,
+      severity: "Low",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-22T09:45:12Z"
+    },
+    {
+      event_id: "EVT-2003",
+      prediction: "Suspicious",
+      threat_type: "Malware",
+      confidence_score: 87.5,
+      anomaly_score: 0.781,
+      severity: "High",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-22T08:30:00Z"
+    },
+    {
+      event_id: "EVT-2004",
+      prediction: "Normal",
+      threat_type: "None",
+      confidence_score: 95.4,
+      anomaly_score: 0.012,
+      severity: "Low",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-22T08:12:45Z"
+    },
+    {
+      event_id: "EVT-2005",
+      prediction: "Suspicious",
+      threat_type: "DDoS Attack",
+      confidence_score: 91.8,
+      anomaly_score: 0.835,
+      severity: "High",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-22T07:55:20Z"
+    },
+    {
+      event_id: "EVT-2006",
+      prediction: "Suspicious",
+      threat_type: "SQL Injection",
+      confidence_score: 88.9,
+      anomaly_score: 0.796,
+      severity: "High",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-22T06:40:10Z"
+    },
+    {
+      event_id: "EVT-2007",
+      prediction: "Normal",
+      threat_type: "None",
+      confidence_score: 98.7,
+      anomaly_score: -0.098,
+      severity: "Low",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-22T05:30:15Z"
+    },
+    {
+      event_id: "EVT-2008",
+      prediction: "Suspicious",
+      threat_type: "Data Exfiltration",
+      confidence_score: 93.6,
+      anomaly_score: 0.867,
+      severity: "Critical",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-22T04:15:00Z"
+    },
+    {
+      event_id: "EVT-2009",
+      prediction: "Normal",
+      threat_type: "None",
+      confidence_score: 92.1,
+      anomaly_score: 0.054,
+      severity: "Medium",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-22T03:50:22Z"
+    },
+    {
+      event_id: "EVT-2010",
+      prediction: "Suspicious",
+      threat_type: "Unauthorized Access",
+      confidence_score: 84.2,
+      anomaly_score: 0.724,
+      severity: "Medium",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-22T03:10:05Z"
+    },
+    {
+      event_id: "EVT-2011",
+      prediction: "Normal",
+      threat_type: "None",
+      confidence_score: 97.5,
+      anomaly_score: -0.045,
+      severity: "Low",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-22T02:45:00Z"
+    },
+    {
+      event_id: "EVT-2012",
+      prediction: "Suspicious",
+      threat_type: "Brute Force",
+      confidence_score: 79.8,
+      anomaly_score: 0.685,
+      severity: "Medium",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-22T01:30:18Z"
+    },
+    {
+      event_id: "EVT-2013",
+      prediction: "Normal",
+      threat_type: "None",
+      confidence_score: 94.6,
+      anomaly_score: 0.021,
+      severity: "Low",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-22T00:55:00Z"
+    },
+    {
+      event_id: "EVT-2014",
+      prediction: "Suspicious",
+      threat_type: "Phishing",
+      confidence_score: 86.3,
+      anomaly_score: 0.758,
+      severity: "Medium",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-21T23:40:12Z"
+    },
+    {
+      event_id: "EVT-2015",
+      prediction: "Normal",
+      threat_type: "None",
+      confidence_score: 96.9,
+      anomaly_score: -0.088,
+      severity: "Low",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-21T22:15:30Z"
+    },
+    {
+      event_id: "EVT-2016",
+      prediction: "Suspicious",
+      threat_type: "Reconnaissance",
+      confidence_score: 72.1,
+      anomaly_score: 0.612,
+      severity: "Low",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-21T21:05:00Z"
+    },
+    {
+      event_id: "EVT-2017",
+      prediction: "Normal",
+      threat_type: "None",
+      confidence_score: 98.2,
+      anomaly_score: -0.111,
+      severity: "Low",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-21T20:20:45Z"
+    },
+    {
+      event_id: "EVT-2018",
+      prediction: "Suspicious",
+      threat_type: "Malware",
+      confidence_score: 95.8,
+      anomaly_score: 0.915,
+      severity: "Critical",
+      model_version: "IF_v1",
+      prediction_timestamp: "2026-08-21T19:50:00Z"
+    }
+  ];
 
   // Helper to filter events based on request parameters
   function filterEvents(events, params = {}) {
@@ -66,56 +249,9 @@ if (USE_MOCK) {
     return [200, { success: true, count: filtered.length, events: filtered }];
   });
 
-  mock.onGet('/kpi-stats').reply(config => {
-    const filtered = filterEvents(mockEventsDatabase, config.params);
-    const stats = {
-      totalEvents: filtered.length,
-      criticalThreats: filtered.filter(e => e.severity === 'Critical').length,
-      highSeverityAlerts: filtered.filter(e => e.severity === 'High').length,
-      vulnerabilities: filtered.filter(e => e.severity === 'Medium').length + Math.floor(filtered.length * 0.4),
-      activeIncidents: filtered.filter(e => e.status === 'Open' || e.status === 'Investigating').length
-    };
-    return [200, { success: true, stats }];
-  });
-
-  mock.onGet('/analytics').reply(config => {
-    const filtered = filterEvents(mockEventsDatabase, config.params);
-
-    const threatDistribution = {
-      Critical: filtered.filter(e => e.severity === 'Critical').length,
-      High: filtered.filter(e => e.severity === 'High').length,
-      Medium: filtered.filter(e => e.severity === 'Medium').length,
-      Low: filtered.filter(e => e.severity === 'Low').length
-    };
-
-    const attackCounts = {};
-    filtered.forEach(e => {
-      attackCounts[e.eventType] = (attackCounts[e.eventType] || 0) + 1;
-    });
-
-    const topAttackTypes = Object.keys(attackCounts)
-      .map(type => ({ type, count: attackCounts[type] }))
-      .sort((a, b) => b.count - a.count);
-
-    const trendMap = {};
-    filtered.forEach(e => {
-      const dateStr = new Date(e.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      trendMap[dateStr] = (trendMap[dateStr] || 0) + 1;
-    });
-
-    const eventTrend = Object.keys(trendMap).map(date => ({
-      date,
-      count: trendMap[date]
-    })).reverse();
-
-    return [200, { success: true, threatDistribution, topAttackTypes, eventTrend }];
-  })
-  3
   mock.onGet('/vulnerabilities').reply(() => {
     return [200, { success: true, count: INITIAL_MOCK_VULNERABILITIES.length, vulnerabilities: INITIAL_MOCK_VULNERABILITIES }]
   });
-
-
 
   mock.onPatch(/\/events\/.+/).reply(config => {
     const eventId = config.url.split('/').pop();
@@ -149,6 +285,60 @@ if (USE_MOCK) {
     mockEventsDatabase.unshift(newEvt);
     return [201, { success: true, event: newEvt }];
   });
+
+  // Mock handlers for predictions and related APIs
+  mock.onGet(/\/predictions\/([A-Za-z0-9-]+)/).reply(config => {
+    const eventId = config.url.split('/').pop();
+    const prediction = MOCK_PREDICTIONS.find(p => p.event_id === eventId);
+    if (prediction) {
+      return [200, prediction];
+    }
+    return [404, { success: false, message: 'Prediction not found' }];
+  });
+
+  mock.onGet('/predictions').reply(() => {
+    return [200, { success: true, predictions: MOCK_PREDICTIONS }];
+  });
+
+  mock.onGet('/anomalies').reply(() => {
+    const anomalies = MOCK_PREDICTIONS.filter(p => p.prediction === 'Suspicious');
+    return [200, anomalies];
+  });
+
+  mock.onGet('/model-performance').reply(() => {
+    const total_predictions = MOCK_PREDICTIONS.length;
+    const normal_predictions = MOCK_PREDICTIONS.filter(p => p.prediction === 'Normal').length;
+    const suspicious_predictions = MOCK_PREDICTIONS.filter(p => p.prediction === 'Suspicious').length;
+    const anomaly_rate = total_predictions > 0 ? parseFloat((suspicious_predictions / total_predictions).toFixed(4)) : 0.0;
+
+    return [200, {
+      total_predictions,
+      normal_predictions,
+      suspicious_predictions,
+      anomaly_rate,
+      model_version: "IF_v1"
+    }];
+  });
+
+  mock.onGet('/threat-summary').reply(() => {
+    const total_predictions = MOCK_PREDICTIONS.length;
+    const normal_count = MOCK_PREDICTIONS.filter(p => p.prediction === 'Normal').length;
+    const suspicious_count = MOCK_PREDICTIONS.filter(p => p.prediction === 'Suspicious').length;
+
+    const severity_breakdown = {
+      Low: MOCK_PREDICTIONS.filter(p => p.severity === 'Low').length,
+      Medium: MOCK_PREDICTIONS.filter(p => p.severity === 'Medium').length,
+      High: MOCK_PREDICTIONS.filter(p => p.severity === 'High').length,
+      Critical: MOCK_PREDICTIONS.filter(p => p.severity === 'Critical').length
+    };
+
+    return [200, {
+      total_predictions,
+      normal_count,
+      suspicious_count,
+      severity_breakdown
+    }];
+  });
 }
 
 // -------------------------------------------------------------
@@ -157,16 +347,6 @@ if (USE_MOCK) {
 
 export const getEvents = async (filters = {}) => {
   const response = await apiClient.get('/events', { params: filters });
-  return response.data;
-};
-
-export const getKpiStats = async (filters = {}) => {
-  const response = await apiClient.get('/kpi-stats', { params: filters });
-  return response.data;
-};
-
-export const getAnalyticsData = async (filters = {}) => {
-  const response = await apiClient.get('/analytics', { params: filters });
   return response.data;
 };
 
@@ -179,9 +359,10 @@ export const simulateLiveAlert = async () => {
   const response = await apiClient.post('/events/simulate');
   return response.data;
 };
+
 export const getVulnerabilities = async () => {
-  const response = await apiClient.get('/vulnerabilities')
-  return response.data
+  const response = await apiClient.get('/vulnerabilities');
+  return response.data;
 };
 
 export const getPredictions = async () => {
@@ -191,5 +372,20 @@ export const getPredictions = async () => {
 
 export const getEventById = async (eventId) => {
   const response = await apiClient.get(`/predictions/${eventId}`);
+  return response.data;
+};
+
+export const getThreatSummary = async () => {
+  const response = await apiClient.get('/threat-summary');
+  return response.data;
+};
+
+export const getModelPerformance = async () => {
+  const response = await apiClient.get('/model-performance');
+  return response.data;
+};
+
+export const getAnomalies = async () => {
+  const response = await apiClient.get('/anomalies');
   return response.data;
 };
