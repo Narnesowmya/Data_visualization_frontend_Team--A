@@ -26,7 +26,8 @@ import {
   FiCpu,
   FiServer,
   FiLock,
-  FiTag
+  FiTag,
+  FiBarChart2
 } from 'react-icons/fi';
 import { getIncidentById } from '../services/riskApi.js';
 
@@ -78,6 +79,14 @@ const PRIORITY_BADGES = {
   P3: { main: '#FBBF24', bg: 'rgba(251, 191, 36, 0.2)', border: 'rgba(251, 191, 36, 0.6)' },
   P4: { main: '#10B981', bg: 'rgba(16, 185, 129, 0.2)', border: 'rgba(16, 185, 129, 0.6)' }
 };
+
+const FACTOR_DEFINITIONS = [
+  { key: 'severity', label: 'Threat Severity', weight: '25%', color: '#EF4444' },
+  { key: 'ml_confidence', label: 'ML Confidence', weight: '25%', color: '#8B5CF6' },
+  { key: 'asset_criticality', label: 'Asset Criticality', weight: '20%', color: '#22D3EE' },
+  { key: 'vulnerability', label: 'Vulnerability Exposure', weight: '20%', color: '#F97316' },
+  { key: 'threat_intelligence', label: 'Threat Intelligence', weight: '10%', color: '#10B981' }
+];
 
 export default function IncidentInvestigation() {
   const { incidentId } = useParams();
@@ -404,6 +413,58 @@ export default function IncidentInvestigation() {
             ) : (
               <Typography variant="body2" sx={{ color: '#64748B' }}>No diagnostic reasons provided.</Typography>
             )}
+          </Paper>
+        </Box>
+
+        {/* Section 3.5: Risk Score Breakdown */}
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <FiBarChart2 color="#8B5CF6" size={20} />
+            <Typography variant="subtitle2" sx={{ color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Risk Score Breakdown
+            </Typography>
+          </Box>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2.5,
+              borderRadius: '12px',
+              backgroundColor: 'rgba(13, 15, 26, 0.6)',
+              border: '1px solid rgba(139, 92, 246, 0.2)'
+            }}
+          >
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {FACTOR_DEFINITIONS.map((factor) => {
+                const value = incident.risk_factors ? incident.risk_factors[factor.key] ?? 0 : 0;
+                return (
+                  <Box key={factor.key}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8 }}>
+                      <Typography variant="body2" sx={{ color: '#F8FAFC', fontWeight: 600 }}>
+                        {factor.label}{' '}
+                        <Typography component="span" variant="caption" sx={{ color: '#94A3B8', ml: 0.5, fontWeight: 500 }}>
+                          ({factor.weight} weight)
+                        </Typography>
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: factor.color, fontWeight: 700, fontFamily: 'monospace' }}>
+                        {value} / 100
+                      </Typography>
+                    </Box>
+                    <Box sx={{ height: 8, borderRadius: '4px', backgroundColor: 'rgba(255, 255, 255, 0.06)', overflow: 'hidden' }}>
+                      <Box
+                        sx={{
+                          height: '100%',
+                          width: `${Math.min(100, Math.max(0, value))}%`,
+                          backgroundColor: factor.color,
+                          borderRadius: '4px',
+                          transition: 'width 0.5s ease',
+                          boxShadow: `0 0 10px ${factor.color}66`
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Box>
           </Paper>
         </Box>
 

@@ -17,7 +17,18 @@
  * ============================================================================
  */
 
-// Mock incident dataset adhering strictly to the 13 agreed schema fields
+/**
+ * Note on risk_factors:
+ * These components match the Milestone 3 specification risk formula:
+ * - Threat Severity: 25%
+ * - ML Confidence: 25%
+ * - Asset Criticality: 20%
+ * - Vulnerability Exposure: 20%
+ * - Threat Intelligence: 10%
+ * Each factor value is normalized from 0 to 100.
+ */
+
+// Mock incident dataset adhering strictly to the agreed schema fields
 const MOCK_INCIDENTS = [
   {
     incident_id: "INC-1001",
@@ -27,6 +38,13 @@ const MOCK_INCIDENTS = [
     priority: "P1",
     affected_asset: "DB-Prod-Cluster-01",
     ml_confidence: 94.2,
+    risk_factors: {
+      severity: 90,
+      ml_confidence: 94,
+      asset_criticality: 100,
+      vulnerability: 85,
+      threat_intelligence: 70
+    },
     related_events: [
       {
         event_id: "EVT-2001",
@@ -65,6 +83,13 @@ const MOCK_INCIDENTS = [
     priority: "P1",
     affected_asset: "Auth-Gateway-Primary",
     ml_confidence: 91.5,
+    risk_factors: {
+      severity: 95,
+      ml_confidence: 92,
+      asset_criticality: 95,
+      vulnerability: 90,
+      threat_intelligence: 85
+    },
     related_events: [
       {
         event_id: "EVT-2003",
@@ -96,6 +121,13 @@ const MOCK_INCIDENTS = [
     priority: "P2",
     affected_asset: "HR-Portal-Web-01",
     ml_confidence: 88.9,
+    risk_factors: {
+      severity: 75,
+      ml_confidence: 89,
+      asset_criticality: 70,
+      vulnerability: 75,
+      threat_intelligence: 65
+    },
     related_events: [
       {
         event_id: "EVT-2006",
@@ -126,6 +158,13 @@ const MOCK_INCIDENTS = [
     priority: "P2",
     affected_asset: "Cloud-Storage-S3-Bucket",
     ml_confidence: 96.0,
+    risk_factors: {
+      severity: 85,
+      ml_confidence: 96,
+      asset_criticality: 80,
+      vulnerability: 80,
+      threat_intelligence: 75
+    },
     related_events: [
       {
         event_id: "EVT-2008",
@@ -156,6 +195,13 @@ const MOCK_INCIDENTS = [
     priority: "P3",
     affected_asset: "API-Gateway-Internal",
     ml_confidence: 79.5,
+    risk_factors: {
+      severity: 45,
+      ml_confidence: 80,
+      asset_criticality: 30,
+      vulnerability: 35,
+      threat_intelligence: 25
+    },
     related_events: [
       {
         event_id: "EVT-2010",
