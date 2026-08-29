@@ -299,6 +299,19 @@ if (USE_MOCK) {
   mock.onGet('/predictions').reply(() => {
     return [200, { success: true, predictions: MOCK_PREDICTIONS }];
   });
+    const MOCK_THREATS = [
+    { id: 'THREAT-1001', indicator: 'Credential theft chain on FIN-DB-02', threat_type: 'Brute Force', confidence: 82, mitre_id: 'FIN-DB-02', tactic: 'Credential Access' },
+    { id: 'THREAT-1002', indicator: 'Suspicious outbound transfer from HR-FILE-01', threat_type: 'Data Exfiltration', confidence: 68, mitre_id: 'HR-FILE-01', tactic: 'Exfiltration' },
+    { id: 'THREAT-1003', indicator: 'Repeated failed logins on VPN-GW-01', threat_type: 'Brute Force', confidence: 41, mitre_id: 'VPN-GW-01', tactic: 'Initial Access' }
+  ];
+
+  mock.onGet('/threats').reply(config => {
+    const { threat_type, tactic } = config.params || {};
+    let filtered = MOCK_THREATS;
+    if (threat_type) filtered = filtered.filter(t => t.threat_type === threat_type);
+    if (tactic) filtered = filtered.filter(t => t.tactic === tactic);
+    return [200, filtered];
+  });
 
   mock.onGet('/anomalies').reply(() => {
     const anomalies = MOCK_PREDICTIONS.filter(p => p.prediction === 'Suspicious');
@@ -389,3 +402,34 @@ export const getAnomalies = async () => {
   const response = await apiClient.get('/anomalies');
   return response.data;
 };
+export function getCorrelatedThreats(filters) {
+  const params = {}
+  if (filters.threatType !== 'All') params.threat_type = filters.threatType
+  if (filters.riskLevel !== 'All') params.tactic = filters.riskLevel // adjust once real risk-level field exists
+
+  return apiClient.get('/threats', { params })
+    .then((res) => ({
+      threats: res.data.map((t) => ({
+        id: t.id,
+        title: t.indicator || t.technique_name || t.threat_type,
+        riskScore: t.confidence ?? 0,
+        priority: t.confidence >= 80 ? 'Critical' : t.confidence >= 60 ? 'High' : t.confidence >= 40 ? 'Medium' : 'Low',
+        threatType: t.threat_type,
+        asset: t.mitre_id || '—',
+        attackStages: t.tactic ? [t.tactic] : []
+      }))
+    }))
+}
+
+export function getRecommendation(threatId) {
+  // TODO: replace with real endpoint once Backend 4 (Risk Engine) exposes it
+  return Promise.resolve({
+    riskScore: 82,
+    priority: 'Critical',
+    actions: [
+      'Isolate affected host from network',
+      'Force credential reset for impacted accounts',
+      'Escalate to Tier 2 SOC analyst'
+    ]
+  })
+}
