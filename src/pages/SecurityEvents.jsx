@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Box, Typography, CircularProgress } from '@mui/material'
 import Filters from '../components/Filters.jsx'
-import EventTable from '../components/EventTable.jsx'
-import EventDetailDrawer from '../components/EventDetailDrawer.jsx'
-import { getEvents } from '../services/api.js'
+import ThreatTable from '../components/ThreatTable.jsx'
+import { getPredictions } from '../services/api.js'
 
 const DEFAULT_FILTERS = {
     severity: 'All',
@@ -14,22 +13,21 @@ const DEFAULT_FILTERS = {
 
 export default function SecurityEvents() {
     const [filters, setFilters] = useState(DEFAULT_FILTERS)
-    const [events, setEvents] = useState([])
+    const [predictions, setPredictions] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-    const [selectedEvent, setSelectedEvent] = useState(null)
-    const [drawerOpen, setDrawerOpen] = useState(false)
 
     useEffect(() => {
         setLoading(true)
-        getEvents(filters)
+        getPredictions()
             .then((data) => {
-                setEvents(data.events || [])
+                const records = data?.predictions || data?.data || (Array.isArray(data) ? data : []);
+                setPredictions(records)
                 setError(null)
             })
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false))
-    }, [filters])
+    }, [])
 
     const handleFilterChange = (key, value) => {
         setFilters((prev) => ({ ...prev, [key]: value }))
@@ -39,10 +37,28 @@ export default function SecurityEvents() {
         setFilters(DEFAULT_FILTERS)
     }
 
-    const handleRowClick = (event) => {
-        setSelectedEvent(event)
-        setDrawerOpen(true)
-    }
+    // Client-side filtering logic for predictions array
+    const filteredPredictions = predictions.filter(pred => {
+        // 1. Severity filter
+        if (filters.severity && filters.severity !== 'All') {
+            if (pred.severity !== filters.severity) return false;
+        }
+
+        // 2. Event Type filter (mapped to threat_type)
+        if (filters.eventType && filters.eventType !== 'All') {
+            if (pred.threat_type !== filters.eventType) return false;
+        }
+
+        // 3. Search IP/Asset/Event ID filter (mapped to event_id / threat_type substring search)
+        if (filters.searchIp && filters.searchIp.trim() !== '') {
+            const term = filters.searchIp.trim().toLowerCase();
+            const idMatch = pred.event_id?.toLowerCase().includes(term);
+            const typeMatch = pred.threat_type?.toLowerCase().includes(term);
+            if (!idMatch && !typeMatch) return false;
+        }
+
+        return true;
+    });
 
     return (
         <Box sx={{ p: 4 }}>
@@ -60,15 +76,9 @@ export default function SecurityEvents() {
                 {loading && <CircularProgress sx={{ color: '#22D3EE' }} />}
                 {error && <Typography sx={{ color: '#F87171' }}>Failed to load events: {error}</Typography>}
                 {!loading && !error && (
-                    <EventTable events={events} loading={loading} onSelectEvent={handleRowClick} />
+                    <ThreatTable predictions={filteredPredictions} loading={loading} />
                 )}
             </Box>
-
-            <EventDetailDrawer
-                event={selectedEvent}
-                open={drawerOpen}
-                onClose={() => setDrawerOpen(false)}
-            />
         </Box>
     )
 }

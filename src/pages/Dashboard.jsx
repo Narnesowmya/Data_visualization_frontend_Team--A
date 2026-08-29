@@ -388,7 +388,8 @@ export default function Dashboard() {
                     sx={{
                       width: '100%',
                       minWidth: 0,
-                      height: '100%'
+                      height: '100%',
+                      minHeight: 380
                     }}
                   >
                     <EventTrendChart
@@ -411,7 +412,8 @@ export default function Dashboard() {
                     sx={{
                       width: '100%',
                       height: '100%',
-                      minWidth: 0
+                      minWidth: 0,
+                      minHeight: 380
                     }}
                   >
                     <ThreatDistributionChart
@@ -434,7 +436,8 @@ export default function Dashboard() {
                     sx={{
                       width: '100%',
                       height: '100%',
-                      minWidth: 0
+                      minWidth: 0,
+                      minHeight: 380
                     }}
                   >
                     <TopAttackTypesChart

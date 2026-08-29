@@ -270,7 +270,7 @@ export default function ThreatTable({ predictions = [], loading }) {
 
                     {/* Event Type / threat_type */}
                     <TableCell sx={{ color: '#E2E8F0', fontSize: '0.9rem' }}>
-                      {pred.threat_type || 'N/A'}
+                      {!pred.threat_type || pred.threat_type === 'None' ? '—' : pred.threat_type}
                     </TableCell>
 
                     {/* Prediction */}
