@@ -1,10 +1,9 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import RiskOverviewCards from '../components/RiskOverviewCards.jsx';
+import RiskDistributionChart from '../components/RiskDistributionChart.jsx';
 
 export default function RiskIntelligence() {
-  // Milestone 3 Risk Overview data
-  // These values will be connected to the backend later.
   const riskStats = {
     totalIncidents: 9,
     critical: 2,
@@ -16,6 +15,7 @@ export default function RiskIntelligence() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 } }}>
+
       {/* Page Header */}
       <Box sx={{ mb: 3 }}>
         <Typography
@@ -44,6 +44,13 @@ export default function RiskIntelligence() {
         stats={riskStats}
         loading={false}
       />
+
+      {/* Task 2 — Risk Distribution */}
+      <RiskDistributionChart
+        stats={riskStats}
+        loading={false}
+      />
+
     </Box>
   );
 }
