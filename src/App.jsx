@@ -6,36 +6,58 @@ import ThreatIntelligence from './pages/ThreatIntelligence.jsx'
 import Vulnerabilities from './pages/Vulnerabilities.jsx'
 import Analytics from './pages/Analytics.jsx'
 import EventDetails from './pages/EventDetails.jsx'
+import RiskIntelligence from './pages/RiskIntelligence.jsx'
 
 function App() {
     return (
         <Routes>
+
             {/* Login */}
-            <Route path="/login" element={<Login />} />
+            <Route
+                path="/login"
+                element={<Login />}
+            />
 
             {/* Main Dashboard */}
-            <Route path="/dashboard" element={<Dashboard />}>
+            <Route
+                path="/dashboard"
+                element={<Dashboard />}
+            >
+
                 {/* Dashboard sub-pages */}
                 <Route
                     path="events"
                     element={<SecurityEvents />}
                 />
+
                 <Route
                     path="threat-intel"
                     element={<ThreatIntelligence />}
                 />
+
                 <Route
                     path="vulnerabilities"
                     element={<Vulnerabilities />}
                 />
+
                 <Route
                     path="analytics"
                     element={<Analytics />}
                 />
+
+                {/* Milestone 3 — Risk Intelligence */}
+                <Route
+                    path="risk-intelligence"
+                    element={<RiskIntelligence />}
+                />
+
             </Route>
 
             {/* Standalone Event Details Page */}
-            <Route path="/events/:eventId" element={<EventDetails />} />
+            <Route
+                path="/events/:eventId"
+                element={<EventDetails />}
+            />
 
             {/* Default */}
             <Route
@@ -48,6 +70,7 @@ function App() {
                 path="*"
                 element={<Navigate to="/login" replace />}
             />
+
         </Routes>
     )
 }
