@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+
 import Login from './pages/Login.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import SecurityEvents from './pages/SecurityEvents.jsx'
@@ -7,6 +8,7 @@ import Vulnerabilities from './pages/Vulnerabilities.jsx'
 import Analytics from './pages/Analytics.jsx'
 import EventDetails from './pages/EventDetails.jsx'
 import RiskIntelligence from './pages/RiskIntelligence.jsx'
+import IncidentInvestigation from './pages/IncidentInvestigation.jsx'
 
 function App() {
     return (
@@ -49,6 +51,12 @@ function App() {
                 <Route
                     path="risk-intelligence"
                     element={<RiskIntelligence />}
+                />
+
+                {/* Incident Investigation */}
+                <Route
+                    path="investigation/:incidentId"
+                    element={<IncidentInvestigation />}
                 />
 
             </Route>
