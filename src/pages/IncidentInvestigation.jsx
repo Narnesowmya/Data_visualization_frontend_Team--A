@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -27,7 +27,8 @@ import {
   FiServer,
   FiLock,
   FiTag,
-  FiBarChart2
+  FiBarChart2,
+  FiDatabase
 } from 'react-icons/fi';
 import { getIncidentById } from '../services/riskApi.js';
 
@@ -70,7 +71,8 @@ const STATUS_BADGES = {
   'Under Investigation': { main: '#22D3EE', bg: 'rgba(34, 211, 238, 0.15)', border: 'rgba(34, 211, 238, 0.4)' },
   Investigating: { main: '#22D3EE', bg: 'rgba(34, 211, 238, 0.15)', border: 'rgba(34, 211, 238, 0.4)' },
   Resolved: { main: '#10B981', bg: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.4)' },
-  Closed: { main: '#64748B', bg: 'rgba(100, 116, 139, 0.15)', border: 'rgba(100, 116, 139, 0.4)' }
+  Closed: { main: '#64748B', bg: 'rgba(100, 116, 139, 0.15)', border: 'rgba(100, 116, 139, 0.4)' },
+  'False Positive': { main: '#10B981', bg: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.4)' }
 };
 
 const PRIORITY_BADGES = {
@@ -87,6 +89,14 @@ const FACTOR_DEFINITIONS = [
   { key: 'vulnerability', label: 'Vulnerability Exposure', weight: '20%', color: '#F97316' },
   { key: 'threat_intelligence', label: 'Threat Intelligence', weight: '10%', color: '#10B981' }
 ];
+
+const getCvssSeverity = (score) => {
+  if (score == null) return { label: 'Unknown', style: RISK_LEVEL_COLORS.Medium };
+  if (score >= 9.0) return { label: 'Critical', style: RISK_LEVEL_COLORS.Critical };
+  if (score >= 7.0) return { label: 'High', style: RISK_LEVEL_COLORS.High };
+  if (score >= 4.0) return { label: 'Medium', style: RISK_LEVEL_COLORS.Medium };
+  return { label: 'Low', style: RISK_LEVEL_COLORS.Low };
+};
 
 export default function IncidentInvestigation() {
   const { incidentId } = useParams();
@@ -164,7 +174,7 @@ export default function IncidentInvestigation() {
   }
 
   const riskStyle = RISK_LEVEL_COLORS[incident.risk_level] || RISK_LEVEL_COLORS.Medium;
-  const statusStyle = STATUS_BADGES[incident.status] || STATUS_BADGES['Under Investigation'];
+  const statusStyle = STATUS_BADGES[incident.status] || STATUS_BADGES.Investigating;
   const priorityStyle = PRIORITY_BADGES[incident.priority] || PRIORITY_BADGES.P2;
 
   return (
@@ -200,16 +210,15 @@ export default function IncidentInvestigation() {
         <Box
           sx={{
             display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
+            flexDirection: { xs: 'column', sm: 'row' },
             justifyContent: 'space-between',
-            alignItems: { xs: 'flex-start', md: 'center' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
             gap: 2,
             mb: 3
           }}
         >
-          {/* Header Left: Incident ID, Threat Type & Badges */}
           <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', mb: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, flexWrap: 'wrap' }}>
               <Typography
                 variant="h4"
                 sx={{
@@ -233,7 +242,7 @@ export default function IncidentInvestigation() {
                 }}
               />
               <Chip
-                label={incident.status || 'Under Investigation'}
+                label={incident.status || 'Investigating'}
                 size="small"
                 sx={{
                   backgroundColor: statusStyle.bg,
@@ -372,6 +381,194 @@ export default function IncidentInvestigation() {
             </Box>
           </Grid>
         </Grid>
+
+        {/* Section 2.5: Security Intelligence Section */}
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <FiShield color="#22D3EE" size={20} />
+            <Typography variant="subtitle2" sx={{ color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Security Intelligence
+            </Typography>
+          </Box>
+
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2.5,
+              borderRadius: '12px',
+              backgroundColor: 'rgba(13, 15, 26, 0.6)',
+              border: '1px solid rgba(34, 211, 238, 0.15)'
+            }}
+          >
+            {/* Top Grid: CVE, CVSS Score, Vulnerability Status, Affected Asset Reference */}
+            <Grid container spacing={2.5} sx={{ mb: 3 }}>
+              {/* CVE ID */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ p: 2, borderRadius: '10px', backgroundColor: 'rgba(18, 17, 31, 0.6)', border: '1px solid rgba(255, 255, 255, 0.05)', height: '100%' }}>
+                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.8, fontWeight: 600 }}>
+                    CVE ID
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <FiDatabase size={18} color="#22D3EE" />
+                    <Typography variant="body1" sx={{ fontWeight: 700, color: '#22D3EE', fontFamily: 'monospace' }}>
+                      {incident.security_intelligence?.cve_id || 'N/A'}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+
+              {/* CVSS Score with color-coded severity treatment */}
+              <Grid item xs={12} sm={6} md={3}>
+                {(() => {
+                  const cvssScore = incident.security_intelligence?.cvss_score;
+                  const { label: cvssSeverityLabel, style: cvssStyle } = getCvssSeverity(cvssScore);
+                  return (
+                    <Box sx={{ p: 2, borderRadius: '10px', backgroundColor: 'rgba(18, 17, 31, 0.6)', border: '1px solid rgba(255, 255, 255, 0.05)', height: '100%' }}>
+                      <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.8, fontWeight: 600 }}>
+                        CVSS Score
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 800, color: cvssStyle.main, fontFamily: '"Sora", sans-serif' }}>
+                          {typeof cvssScore === 'number' ? cvssScore.toFixed(1) : 'N/A'}
+                        </Typography>
+                        {cvssScore != null && (
+                          <Chip
+                            label={cvssSeverityLabel}
+                            size="small"
+                            sx={{
+                              backgroundColor: cvssStyle.bg,
+                              color: cvssStyle.main,
+                              border: `1px solid ${cvssStyle.border}`,
+                              fontWeight: 800,
+                              fontSize: '0.72rem'
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                  );
+                })()}
+              </Grid>
+
+              {/* Vulnerability Status */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ p: 2, borderRadius: '10px', backgroundColor: 'rgba(18, 17, 31, 0.6)', border: '1px solid rgba(255, 255, 255, 0.05)', height: '100%' }}>
+                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.8, fontWeight: 600 }}>
+                    Vulnerability Status
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Chip
+                      label={incident.security_intelligence?.vulnerability_status || 'N/A'}
+                      size="small"
+                      sx={{
+                        backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                        color: '#EF4444',
+                        border: '1px solid rgba(239, 68, 68, 0.4)',
+                        fontWeight: 700,
+                        fontSize: '0.75rem'
+                      }}
+                    />
+                  </Box>
+                </Box>
+              </Grid>
+
+              {/* Affected Asset Reference */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ p: 2, borderRadius: '10px', backgroundColor: 'rgba(18, 17, 31, 0.6)', border: '1px solid rgba(255, 255, 255, 0.05)', height: '100%' }}>
+                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.8, fontWeight: 600 }}>
+                    Affected Asset
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#94A3B8', fontSize: '0.85rem' }}>
+                    {incident.affected_asset || 'N/A'}{' '}
+                    <Typography component="span" variant="caption" sx={{ color: '#64748B', display: 'inline', fontStyle: 'italic' }}>
+                      (Covered in Key Attributes)
+                    </Typography>
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+
+            {/* Bottom: IOC Indicators Table */}
+            <Typography variant="caption" sx={{ color: '#94A3B8', display: 'block', mb: 1.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              IOC Indicators ({incident.security_intelligence?.ioc_indicators ? incident.security_intelligence.ioc_indicators.length : 0})
+            </Typography>
+
+            {Array.isArray(incident.security_intelligence?.ioc_indicators) && incident.security_intelligence.ioc_indicators.length > 0 ? (
+              <TableContainer
+                component={Paper}
+                elevation={0}
+                sx={{
+                  backgroundColor: 'rgba(18, 17, 31, 0.6)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '10px'
+                }}
+              >
+                <Table size="small">
+                  <TableHead sx={{ backgroundColor: 'rgba(255, 255, 255, 0.03)' }}>
+                    <TableRow>
+                      <TableCell sx={{ color: '#64748B', fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.08)' }}>Type</TableCell>
+                      <TableCell sx={{ color: '#64748B', fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.08)' }}>Value</TableCell>
+                      <TableCell sx={{ color: '#64748B', fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.08)' }}>Status</TableCell>
+                      <TableCell sx={{ color: '#64748B', fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.08)' }}>Threat Actor</TableCell>
+                      <TableCell sx={{ color: '#64748B', fontWeight: 700, borderColor: 'rgba(255, 255, 255, 0.08)' }}>Confidence</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {incident.security_intelligence.ioc_indicators.map((ioc, idx) => (
+                      <TableRow key={idx} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                        <TableCell sx={{ color: '#22D3EE', fontWeight: 700, fontSize: '0.82rem', borderColor: 'rgba(255, 255, 255, 0.05)' }}>
+                          {ioc.type || 'N/A'}
+                        </TableCell>
+                        <TableCell sx={{ color: '#F8FAFC', fontFamily: 'monospace', fontSize: '0.85rem', borderColor: 'rgba(255, 255, 255, 0.05)' }}>
+                          {ioc.value || 'N/A'}
+                        </TableCell>
+                        <TableCell sx={{ borderColor: 'rgba(255, 255, 255, 0.05)' }}>
+                          <Chip
+                            label={ioc.status || 'Unknown'}
+                            size="small"
+                            sx={{
+                              backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                              color: '#EF4444',
+                              border: '1px solid rgba(239, 68, 68, 0.4)',
+                              fontSize: '0.72rem',
+                              fontWeight: 700
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell sx={{ color: '#94A3B8', fontSize: '0.85rem', borderColor: 'rgba(255, 255, 255, 0.05)' }}>
+                          {ioc.threat_actor || 'Unknown'}
+                        </TableCell>
+                        <TableCell sx={{ borderColor: 'rgba(255, 255, 255, 0.05)' }}>
+                          <Chip
+                            label={ioc.confidence || 'Medium'}
+                            size="small"
+                            sx={{
+                              backgroundColor: ioc.confidence === 'High'
+                                ? 'rgba(239, 68, 68, 0.15)' : ioc.confidence === 'Medium'
+                                ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                              color: ioc.confidence === 'High'
+                                ? '#EF4444' : ioc.confidence === 'Medium'
+                                ? '#F59E0B' : '#10B981',
+                              border: `1px solid ${ioc.confidence === 'High'
+                                ? 'rgba(239, 68, 68, 0.4)' : ioc.confidence === 'Medium'
+                                ? 'rgba(245, 158, 11, 0.4)' : 'rgba(16, 185, 129, 0.4)'}`,
+                              fontSize: '0.72rem',
+                              fontWeight: 700
+                            }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ) : (
+              <Box sx={{ p: 2, borderRadius: '8px', backgroundColor: 'rgba(18, 17, 31, 0.4)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <Typography variant="body2" sx={{ color: '#64748B' }}>No IOC indicators recorded for this incident.</Typography>
+              </Box>
+            )}
+          </Paper>
+        </Box>
 
         {/* Section 3: "Why is this high risk?" Explainability Panel */}
         <Box sx={{ mb: 4 }}>

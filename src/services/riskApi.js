@@ -3,17 +3,16 @@
  * RISK API SERVICE - INCIDENT INVESTIGATION DATA ENGINE
  * ============================================================================
  * 
+ * CONFIRMED SCHEMAS / ENUMS:
+ * - status enum values: ['Open', 'Investigating', 'Resolved', 'False Positive'] (Confirmed by Backend)
+ * 
  * PENDING TEAM CONFIRMATION:
  * The following items are subject to team/backend confirmation once the real
  * backend API contract is finalized:
  * 1. priority enum values: Currently using ['P1', 'P2', 'P3', 'P4']. Confirm against
- *    backend's actual priority enumeration.
- * 2. status enum values: Currently using ['Open', 'Under Investigation', 'Resolved', 'Closed'].
- *    Confirm against backend's spec doc values (e.g., Open / Investigating / Resolved / False Positive).
- * 3. related_events shape: Currently returning an array of related event objects.
- *    Confirm whether backend returns an array of objects, array of event IDs, or integer count.
- * 4. risk_score decimal precision: Currently allowing floats (e.g. 88.5).
- *    Confirm whether backend rounds scores to integers (0-100).
+ *    backend's actual priority enumeration (pending Backend 4/6 confirmation).
+ * 2. related_events shape: Currently returning an array of related event objects.
+ *    Confirm whether backend returns an array of objects, array of event IDs, or integer count (pending Backend 4/6 confirmation).
  * ============================================================================
  */
 
@@ -32,6 +31,28 @@
 const MOCK_INCIDENTS = [
   {
     incident_id: "INC-1001",
+    security_intelligence: {
+      "cve_id": "CVE-2024-30078",
+      "cvss_score": 9.2,
+      "vulnerability_status": "Open",
+      "ioc_indicators": [
+            {
+                  "type": "IP",
+                  "value": "185.220.101.5",
+                  "status": "Malicious",
+                  "threat_actor": "APT29 / Midnight Blizzard",
+                  "confidence": "High"
+            },
+            {
+                  "type": "Account",
+                  "value": "root",
+                  "status": "Targeted",
+                  "threat_actor": "Unknown",
+                  "confidence": "Medium"
+            }
+      ]
+},
+    
     threat_type: "Brute Force",
     risk_score: 88.5,
     risk_level: "Critical",
@@ -73,10 +94,32 @@ const MOCK_INCIDENTS = [
       "Advisory: Enforce multi-factor authentication for DB-Prod-Cluster-01 root access",
       "Advisory: Review and rotate compromised SSH credentials"
     ],
-    status: "Under Investigation"
+    status: "Investigating"
   },
   {
     incident_id: "INC-1002",
+    security_intelligence: {
+      "cve_id": "CVE-2024-21626",
+      "cvss_score": 9.8,
+      "vulnerability_status": "Open",
+      "ioc_indicators": [
+            {
+                  "type": "IP",
+                  "value": "45.154.255.77",
+                  "status": "Malicious C2",
+                  "threat_actor": "Wizard Spider",
+                  "confidence": "High"
+            },
+            {
+                  "type": "Hash (SHA256)",
+                  "value": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "status": "Malicious",
+                  "threat_actor": "Wizard Spider",
+                  "confidence": "High"
+            }
+      ]
+},
+    
     threat_type: "Malware",
     risk_score: 92.0,
     risk_level: "Critical",
@@ -115,6 +158,21 @@ const MOCK_INCIDENTS = [
   },
   {
     incident_id: "INC-1003",
+    security_intelligence: {
+      "cve_id": "CVE-2023-48795",
+      "cvss_score": 7.5,
+      "vulnerability_status": "Under Review",
+      "ioc_indicators": [
+            {
+                  "type": "IP",
+                  "value": "194.26.29.112",
+                  "status": "Suspicious",
+                  "threat_actor": "Unknown",
+                  "confidence": "Medium"
+            }
+      ]
+},
+    
     threat_type: "SQL Injection",
     risk_score: 76.4,
     risk_level: "High",
@@ -148,10 +206,25 @@ const MOCK_INCIDENTS = [
       "Advisory: Update WAF rule set to inspect and drop SQLi signatures",
       "Advisory: Parameterize queries on vulnerable HR-Portal endpoint"
     ],
-    status: "Under Investigation"
+    status: "Investigating"
   },
   {
     incident_id: "INC-1004",
+    security_intelligence: {
+      "cve_id": "CVE-2024-38077",
+      "cvss_score": 8.4,
+      "vulnerability_status": "Active Exploitation",
+      "ioc_indicators": [
+            {
+                  "type": "IP",
+                  "value": "103.251.170.8",
+                  "status": "Malicious Egress",
+                  "threat_actor": "Lazarus Group",
+                  "confidence": "High"
+            }
+      ]
+},
+    
     threat_type: "Data Exfiltration",
     risk_score: 84.1,
     risk_level: "High",
@@ -189,6 +262,28 @@ const MOCK_INCIDENTS = [
   },
   {
     incident_id: "INC-1005",
+    security_intelligence: {
+      "cve_id": "CVE-2023-38831",
+      "cvss_score": 5.3,
+      "vulnerability_status": "Mitigated",
+      "ioc_indicators": [
+            {
+                  "type": "Domain",
+                  "value": "auth-update-verify.com",
+                  "status": "Phishing",
+                  "threat_actor": "FIN7",
+                  "confidence": "High"
+            },
+            {
+                  "type": "IP",
+                  "value": "198.51.100.44",
+                  "status": "Suspicious",
+                  "threat_actor": "FIN7",
+                  "confidence": "Low"
+            }
+      ]
+},
+    
     threat_type: "Phishing",
     risk_score: 45.0,
     risk_level: "Medium",
