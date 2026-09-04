@@ -1,68 +1,60 @@
 /**
  * ============================================================================
- * RISK API SERVICE - INCIDENT INVESTIGATION DATA ENGINE
+ * RISK API SERVICE - INCIDENT INVESTIGATION & RISK DATA ENGINE
  * ============================================================================
  * 
  * CONFIRMED SCHEMAS / ENUMS:
  * - status enum values: ['Open', 'Investigating', 'Resolved', 'False Positive'] (Confirmed by Backend)
  * 
- * PENDING TEAM CONFIRMATION:
- * The following items are subject to team/backend confirmation once the real
- * backend API contract is finalized:
- * 1. priority enum values: Currently using ['P1', 'P2', 'P3', 'P4']. Confirm against
- *    backend's actual priority enumeration (pending Backend 4/6 confirmation).
- * 2. related_events shape: Currently returning an array of related event objects.
- *    Confirm whether backend returns an array of objects, array of event IDs, or integer count (pending Backend 4/6 confirmation).
- * 3. attack_chain shape: Currently returning mock attack chain data (pending Backend Task 9 Correlation real output).
+ * Agreed 13-field Incident Schema:
+ * {
+ *   incident_id, threat_type, risk_score, risk_level, priority,
+ *   affected_asset, ml_confidence, related_events, mitre_techniques,
+ *   ioc_status, reasons, recommendations, status, [risk_factors, attack_chain, security_intelligence, created_at]
+ * }
+ * 
+ * Priority Scale: ['P1', 'P2', 'P3', 'P4']
+ * PENDING: priority format not yet confirmed by backend (P1-P4 vs Low/Medium/High/Immediate) — do not treat as final, update once contract is locked.
+ * Risk Level: ['Critical', 'High', 'Medium', 'Low']
  * ============================================================================
  */
 
-/**
- * Note on risk_factors:
- * These components match the Milestone 3 specification risk formula:
- * - Threat Severity: 25%
- * - ML Confidence: 25%
- * - Asset Criticality: 20%
- * - Vulnerability Exposure: 20%
- * - Threat Intelligence: 10%
- * Each factor value is normalized from 0 to 100.
- */
-
-// Mock incident dataset adhering strictly to the agreed schema fields
-const MOCK_INCIDENTS = [
+export const MOCK_INCIDENTS = [
   {
     incident_id: "INC-1001",
+    created_at: "2026-08-29T10:15:30Z",
     security_intelligence: {
-      "cve_id": "CVE-2024-30078",
-      "cvss_score": 9.2,
-      "vulnerability_status": "Open",
-      "ioc_indicators": [
-            {
-                  "type": "IP",
-                  "value": "185.220.101.5",
-                  "status": "Malicious",
-                  "threat_actor": "APT29 / Midnight Blizzard",
-                  "confidence": "High"
-            },
-            {
-                  "type": "Account",
-                  "value": "root",
-                  "status": "Targeted",
-                  "threat_actor": "Unknown",
-                  "confidence": "Medium"
-            }
+      cve_id: "CVE-2024-30078",
+      cvss_score: 9.2,
+      vulnerability_status: "Open",
+      ioc_indicators: [
+        {
+          type: "IP",
+          value: "185.220.101.5",
+          status: "Malicious",
+          threat_actor: "APT29 / Midnight Blizzard",
+          confidence: "High"
+        },
+        {
+          type: "Account",
+          value: "root",
+          status: "Targeted",
+          threat_actor: "Unknown",
+          confidence: "Medium"
+        }
       ]
     },
     threat_type: "Brute Force",
     risk_score: 88.5,
     risk_level: "Critical",
+    // PENDING: priority format not yet confirmed by backend (P1-P4 vs Low/Medium/High/Immediate) — do not treat as final, update once contract is locked.
     priority: "P1",
     affected_asset: "DB-Prod-Cluster-01",
     ml_confidence: 94.2,
     risk_factors: {
       severity: 90,
       ml_confidence: 94,
-      asset_criticality: 90,
+      asset_criticality: 95,
       vulnerability: 85,
       threat_intelligence: 80
     },
@@ -71,24 +63,23 @@ const MOCK_INCIDENTS = [
         event_id: "EVT-2001",
         timestamp: "2026-08-29T10:15:30Z",
         source_ip: "185.220.101.5",
-        description: "SSH brute force attempt detected (142 failed attempts/min)"
+        description: "150+ failed SSH login attempts in 60s"
       },
       {
         event_id: "EVT-2002",
         timestamp: "2026-08-29T10:16:12Z",
         source_ip: "185.220.101.5",
-        description: "Root account privileges acquired via local exploit payload"
+        description: "Multiple root password guessing failures detected"
       }
     ],
     mitre_techniques: [
-      "T1110 - Brute Force",
+      "T1110.001 - Password Guessing",
       "T1078 - Valid Accounts"
     ],
     ioc_status: "Active",
     reasons: [
-      "Abnormal login frequency exceeding threshold by 300%",
-      "Source IP matches known malicious exit node in threat intelligence feed",
-      "Privileged account accessed outside standard operational hours"
+      "Anomalous spike in SSH authentication failures from unassigned IP 185.220.101.5",
+      "Targeted account 'root' and 'admin' on core production database node"
     ],
     recommendations: [
       "Advisory: Block source IP 185.220.101.5 at edge perimeter firewall",
@@ -96,19 +87,18 @@ const MOCK_INCIDENTS = [
       "Advisory: Review and rotate compromised SSH credentials"
     ],
     status: "Investigating",
-    // NOTE: attack_chain data is currently mock, pending Backend Task 9 (Correlation) real output.
     attack_chain: {
       attack_chain_id: "AC-001",
       events: [
-        { event_id: "EVT-2001", timestamp: "2026-08-29T10:15:30Z", event_type: "Failed Login" },
-        { event_id: "EVT-2002", timestamp: "2026-08-29T10:16:12Z", event_type: "Privilege Escalation" }
+        { event_id: "EVT-2001", timestamp: "2026-08-29T10:15:30Z", event_type: "SSH Login Attempt" },
+        { event_id: "EVT-2002", timestamp: "2026-08-29T10:16:12Z", event_type: "Root Credential Guessing" }
       ],
-      mitre_techniques: ["T1110 - Brute Force", "T1078 - Valid Accounts"],
+      mitre_techniques: ["T1110.001 - Password Guessing", "T1078 - Valid Accounts"],
       tactics: ["Credential Access", "Initial Access"],
-      stages: ["Initial Access", "Credential Access", "Privilege Escalation"],
-      current_stage: "Privilege Escalation",
+      stages: ["Reconnaissance", "Initial Access", "Credential Access"],
+      current_stage: "Credential Access",
       risk_score: 88.5,
-      confidence: 89,
+      confidence: 94,
       start_time: "2026-08-29T10:15:30Z",
       end_time: "2026-08-29T10:16:12Z",
       asset: "DB-Prod-Cluster-01",
@@ -117,25 +107,26 @@ const MOCK_INCIDENTS = [
   },
   {
     incident_id: "INC-1002",
+    created_at: "2026-08-29T09:40:00Z",
     security_intelligence: {
-      "cve_id": "CVE-2024-21626",
-      "cvss_score": 9.8,
-      "vulnerability_status": "Open",
-      "ioc_indicators": [
-            {
-                  "type": "IP",
-                  "value": "45.154.255.77",
-                  "status": "Malicious C2",
-                  "threat_actor": "Wizard Spider",
-                  "confidence": "High"
-            },
-            {
-                  "type": "Hash (SHA256)",
-                  "value": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-                  "status": "Malicious",
-                  "threat_actor": "Wizard Spider",
-                  "confidence": "High"
-            }
+      cve_id: "CVE-2024-21413",
+      cvss_score: 9.8,
+      vulnerability_status: "Critical Unpatched",
+      ioc_indicators: [
+        {
+          type: "SHA256",
+          value: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          status: "Active",
+          threat_actor: "FIN7",
+          confidence: "High"
+        },
+        {
+          type: "Domain",
+          value: "c2-update-beacon.net",
+          status: "Active C2",
+          threat_actor: "FIN7",
+          confidence: "High"
+        }
       ]
     },
     threat_type: "Malware",
@@ -147,9 +138,9 @@ const MOCK_INCIDENTS = [
     risk_factors: {
       severity: 95,
       ml_confidence: 92,
-      asset_criticality: 95,
+      asset_criticality: 90,
       vulnerability: 90,
-      threat_intelligence: 85
+      threat_intelligence: 88
     },
     related_events: [
       {
@@ -173,39 +164,38 @@ const MOCK_INCIDENTS = [
       "Advisory: Collect memory dump for forensic analysis"
     ],
     status: "Open",
-    // NOTE: attack_chain data is currently mock, pending Backend Task 9 (Correlation) real output.
     attack_chain: {
       attack_chain_id: "AC-002",
       events: [
-        { event_id: "EVT-2003", timestamp: "2026-08-29T09:40:00Z", event_type: "Powershell Execution" },
-        { event_id: "EVT-2004", timestamp: "2026-08-29T09:42:15Z", event_type: "Process Injection" }
+        { event_id: "EVT-2003", timestamp: "2026-08-29T09:40:00Z", event_type: "Malware Beacon Execution" }
       ],
       mitre_techniques: ["T1059.001 - PowerShell", "T1055 - Process Injection"],
       tactics: ["Execution", "Defense Evasion"],
-      stages: ["Initial Access", "Execution", "Defense Evasion", "Persistence"],
-      current_stage: "Defense Evasion",
+      stages: ["Execution", "Persistence", "Command and Control"],
+      current_stage: "Command and Control",
       risk_score: 92.0,
-      confidence: 91,
+      confidence: 92,
       start_time: "2026-08-29T09:40:00Z",
-      end_time: "2026-08-29T09:42:15Z",
+      end_time: "2026-08-29T09:40:00Z",
       asset: "Auth-Gateway-Primary",
       source_ip: "45.154.255.77"
     }
   },
   {
     incident_id: "INC-1003",
+    created_at: "2026-08-29T08:22:15Z",
     security_intelligence: {
-      "cve_id": "CVE-2023-48795",
-      "cvss_score": 7.5,
-      "vulnerability_status": "Under Review",
-      "ioc_indicators": [
-            {
-                  "type": "IP",
-                  "value": "194.26.29.112",
-                  "status": "Suspicious",
-                  "threat_actor": "Unknown",
-                  "confidence": "Medium"
-            }
+      cve_id: "CVE-2024-6112",
+      cvss_score: 7.5,
+      vulnerability_status: "Under Review",
+      ioc_indicators: [
+        {
+          type: "IP",
+          value: "194.26.29.112",
+          status: "Suspicious",
+          threat_actor: "Unknown",
+          confidence: "Medium"
+        }
       ]
     },
     threat_type: "SQL Injection",
@@ -242,7 +232,6 @@ const MOCK_INCIDENTS = [
       "Advisory: Parameterize queries on vulnerable HR-Portal endpoint"
     ],
     status: "Investigating",
-    // NOTE: attack_chain data is currently mock, pending Backend Task 9 (Correlation) real output.
     attack_chain: {
       attack_chain_id: "AC-003",
       events: [
@@ -263,18 +252,19 @@ const MOCK_INCIDENTS = [
   },
   {
     incident_id: "INC-1004",
+    created_at: "2026-08-29T07:11:05Z",
     security_intelligence: {
-      "cve_id": "CVE-2024-38077",
-      "cvss_score": 8.4,
-      "vulnerability_status": "Active Exploitation",
-      "ioc_indicators": [
-            {
-                  "type": "IP",
-                  "value": "103.251.170.8",
-                  "status": "Malicious Egress",
-                  "threat_actor": "Lazarus Group",
-                  "confidence": "High"
-            }
+      cve_id: "CVE-2024-38077",
+      cvss_score: 8.4,
+      vulnerability_status: "Active Exploitation",
+      ioc_indicators: [
+        {
+          type: "IP",
+          value: "103.251.170.8",
+          status: "Malicious Egress",
+          threat_actor: "Lazarus Group",
+          confidence: "High"
+        }
       ]
     },
     threat_type: "Data Exfiltration",
@@ -311,7 +301,6 @@ const MOCK_INCIDENTS = [
       "Advisory: Perform audit on S3 bucket access policies"
     ],
     status: "Open",
-    // NOTE: attack_chain data is currently mock, pending Backend Task 9 (Correlation) real output.
     attack_chain: {
       attack_chain_id: "AC-004",
       events: [
@@ -332,25 +321,26 @@ const MOCK_INCIDENTS = [
   },
   {
     incident_id: "INC-1005",
+    created_at: "2026-08-29T06:05:40Z",
     security_intelligence: {
-      "cve_id": "CVE-2023-38831",
-      "cvss_score": 5.3,
-      "vulnerability_status": "Mitigated",
-      "ioc_indicators": [
-            {
-                  "type": "Domain",
-                  "value": "auth-update-verify.com",
-                  "status": "Phishing",
-                  "threat_actor": "FIN7",
-                  "confidence": "High"
-            },
-            {
-                  "type": "IP",
-                  "value": "198.51.100.44",
-                  "status": "Suspicious",
-                  "threat_actor": "FIN7",
-                  "confidence": "Low"
-            }
+      cve_id: "CVE-2023-38831",
+      cvss_score: 5.3,
+      vulnerability_status: "Mitigated",
+      ioc_indicators: [
+        {
+          type: "Domain",
+          value: "auth-update-verify.com",
+          status: "Phishing",
+          threat_actor: "FIN7",
+          confidence: "High"
+        },
+        {
+          type: "IP",
+          value: "198.51.100.44",
+          status: "Suspicious",
+          threat_actor: "FIN7",
+          confidence: "Low"
+        }
       ]
     },
     threat_type: "Phishing",
@@ -387,7 +377,6 @@ const MOCK_INCIDENTS = [
       "Advisory: Reset user corporate single sign-on credentials"
     ],
     status: "Resolved",
-    // NOTE: attack_chain data is currently mock, pending Backend Task 9 (Correlation) real output.
     attack_chain: {
       attack_chain_id: "AC-005",
       events: [
@@ -405,27 +394,192 @@ const MOCK_INCIDENTS = [
       asset: "API-Gateway-Internal",
       source_ip: "198.51.100.44"
     }
+  },
+  {
+    incident_id: "INC-1006",
+    created_at: "2026-08-28T14:30:00Z",
+    security_intelligence: {
+      cve_id: "CVE-2024-4471",
+      cvss_score: 6.2,
+      vulnerability_status: "Patch Pending",
+      ioc_indicators: [
+        {
+          type: "IP",
+          value: "91.240.118.172",
+          status: "Scanning",
+          threat_actor: "Unknown",
+          confidence: "Medium"
+        }
+      ]
+    },
+    threat_type: "Reconnaissance",
+    risk_score: 38.0,
+    risk_level: "Low",
+    priority: "P4",
+    affected_asset: "VPN-Edge-Router-02",
+    ml_confidence: 84.0,
+    risk_factors: {
+      severity: 30,
+      ml_confidence: 84,
+      asset_criticality: 40,
+      vulnerability: 40,
+      threat_intelligence: 30
+    },
+    related_events: [
+      {
+        event_id: "EVT-2014",
+        timestamp: "2026-08-28T14:30:00Z",
+        source_ip: "91.240.118.172",
+        description: "Port sweep on internal subnet ranges"
+      }
+    ],
+    mitre_techniques: [
+      "T1046 - Network Service Discovery"
+    ],
+    ioc_status: "Active",
+    reasons: [
+      "Rapid sequential TCP SYN probes targeting non-standard ports"
+    ],
+    recommendations: [
+      "Advisory: Rate-limit ICMP and SYN requests on VPN gateway"
+    ],
+    status: "Investigating",
+    attack_chain: null
+  },
+  {
+    incident_id: "INC-1007",
+    created_at: "2026-08-28T11:10:20Z",
+    security_intelligence: {
+      cve_id: "CVE-2024-7723",
+      cvss_score: 7.1,
+      vulnerability_status: "Open",
+      ioc_indicators: [
+        {
+          type: "IP",
+          value: "185.190.140.23",
+          status: "Volumetric Egress",
+          threat_actor: "Mirai Botnet",
+          confidence: "High"
+        }
+      ]
+    },
+    threat_type: "DDoS Attack",
+    risk_score: 82.5,
+    risk_level: "High",
+    priority: "P2",
+    affected_asset: "K8s-Ingress-Controller",
+    ml_confidence: 93.0,
+    risk_factors: {
+      severity: 85,
+      ml_confidence: 93,
+      asset_criticality: 85,
+      vulnerability: 70,
+      threat_intelligence: 80
+    },
+    related_events: [
+      {
+        event_id: "EVT-2016",
+        timestamp: "2026-08-28T11:10:20Z",
+        source_ip: "185.190.140.23",
+        description: "SYN Flood spike reaching 45,000 packets/sec"
+      }
+    ],
+    mitre_techniques: [
+      "T1498 - Network Denial of Service"
+    ],
+    ioc_status: "Active",
+    reasons: [
+      "High packet-rate volumetric anomaly detected at border ingress"
+    ],
+    recommendations: [
+      "Advisory: Engage cloud scrubbing center and enforce rate throttling"
+    ],
+    status: "Open",
+    attack_chain: null
+  },
+  {
+    incident_id: "INC-1008",
+    created_at: "2026-08-27T16:45:00Z",
+    security_intelligence: {
+      cve_id: "CVE-2024-5561",
+      cvss_score: 5.3,
+      vulnerability_status: "Resolved",
+      ioc_indicators: [
+        {
+          type: "IP",
+          value: "172.16.45.89",
+          status: "Internal Pivot",
+          threat_actor: "Insider Threat",
+          confidence: "Medium"
+        }
+      ]
+    },
+    threat_type: "Unauthorized Access",
+    risk_score: 58.0,
+    risk_level: "Medium",
+    priority: "P3",
+    affected_asset: "Finance-App-Server",
+    ml_confidence: 82.0,
+    risk_factors: {
+      severity: 60,
+      ml_confidence: 82,
+      asset_criticality: 70,
+      vulnerability: 45,
+      threat_intelligence: 40
+    },
+    related_events: [
+      {
+        event_id: "EVT-2018",
+        timestamp: "2026-08-27T16:45:00Z",
+        source_ip: "172.16.45.89",
+        description: "Privilege escalation attempt using expired Service Account token"
+      }
+    ],
+    mitre_techniques: [
+      "T1078.004 - Cloud Accounts"
+    ],
+    ioc_status: "Remediated",
+    reasons: [
+      "Service account token re-use from non-whitelisted workstation IP"
+    ],
+    recommendations: [
+      "Advisory: Invalidate leaked service token and rotate secrets vault"
+    ],
+    status: "Resolved",
+    attack_chain: null
   }
 ];
 
 /**
  * Fetch all security incidents with optional filtering.
  * 
- * @param {Object} [filters={}] - Filter criteria (e.g. { status, risk_level })
+ * @param {Object} [filters={}] - Filter criteria (e.g. { status, risk_level, priority, search })
  * @returns {Promise<Array>} List of incident objects matching exact team schema
  */
 export async function getIncidents(filters = {}) {
-  // Simulate asynchronous network latency
   await new Promise((resolve) => setTimeout(resolve, 150));
 
   let results = [...MOCK_INCIDENTS];
 
-  if (filters.status) {
+  if (filters.status && filters.status !== 'All') {
     results = results.filter((inc) => inc.status.toLowerCase() === filters.status.toLowerCase());
   }
 
-  if (filters.risk_level) {
+  if (filters.risk_level && filters.risk_level !== 'All') {
     results = results.filter((inc) => inc.risk_level.toLowerCase() === filters.risk_level.toLowerCase());
+  }
+
+  if (filters.priority && filters.priority !== 'All') {
+    results = results.filter((inc) => inc.priority.toLowerCase() === filters.priority.toLowerCase());
+  }
+
+  if (filters.search) {
+    const term = filters.search.toLowerCase();
+    results = results.filter((inc) =>
+      inc.incident_id.toLowerCase().includes(term) ||
+      inc.threat_type.toLowerCase().includes(term) ||
+      inc.affected_asset.toLowerCase().includes(term)
+    );
   }
 
   return results;
@@ -438,9 +592,34 @@ export async function getIncidents(filters = {}) {
  * @returns {Promise<Object|null>} Incident object matching exact team schema or null if not found
  */
 export async function getIncidentById(incident_id) {
-  // Simulate asynchronous network latency
   await new Promise((resolve) => setTimeout(resolve, 100));
 
   const incident = MOCK_INCIDENTS.find((inc) => inc.incident_id === incident_id);
   return incident ? { ...incident } : null;
+}
+
+/**
+ * Dynamically computes summary metrics from MOCK_INCIDENTS.
+ * Derived from the exact same array PriorityTable reads.
+ * 
+ * @returns {Promise<Object>} Aggregated incident risk counts
+ */
+export async function getRiskSummary() {
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  const total_incidents = MOCK_INCIDENTS.length;
+  const critical = MOCK_INCIDENTS.filter((i) => i.risk_level === 'Critical').length;
+  const high = MOCK_INCIDENTS.filter((i) => i.risk_level === 'High').length;
+  const medium = MOCK_INCIDENTS.filter((i) => i.risk_level === 'Medium').length;
+  const low = MOCK_INCIDENTS.filter((i) => i.risk_level === 'Low').length;
+  const open_incidents = MOCK_INCIDENTS.filter((i) => i.status === 'Open').length;
+
+  return {
+    total_incidents,
+    critical,
+    high,
+    medium,
+    low,
+    open_incidents
+  };
 }

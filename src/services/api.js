@@ -389,3 +389,4 @@ export const getAnomalies = async () => {
   const response = await apiClient.get('/anomalies');
   return response.data;
 };
+
