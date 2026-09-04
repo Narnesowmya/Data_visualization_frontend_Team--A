@@ -327,6 +327,7 @@ export default function PriorityTable({ incidents = [], loading, error }) {
                     </TableCell>
 
                     {/* Priority (Plain Text / Subtle Badge P1-P4) */}
+                    {/* PENDING: priority format not yet confirmed by backend (P1-P4 vs Low/Medium/High/Immediate) — do not treat as final, update once contract is locked. */}
                     <TableCell sx={{ color: '#F8FAFC', fontWeight: 700, fontFamily: 'monospace', fontSize: '0.85rem' }}>
                       <Box
                         component="span"
@@ -341,6 +342,7 @@ export default function PriorityTable({ incidents = [], loading, error }) {
                           color: '#CBD5E1'
                         }}
                       >
+                        {/* PENDING: priority format not yet confirmed by backend (P1-P4 vs Low/Medium/High/Immediate) — do not treat as final, update once contract is locked. */}
                         {inc.priority || '—'}
                       </Box>
                     </TableCell>

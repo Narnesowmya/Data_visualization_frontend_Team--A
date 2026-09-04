@@ -14,6 +14,7 @@
  * }
  * 
  * Priority Scale: ['P1', 'P2', 'P3', 'P4']
+ * PENDING: priority format not yet confirmed by backend (P1-P4 vs Low/Medium/High/Immediate) — do not treat as final, update once contract is locked.
  * Risk Level: ['Critical', 'High', 'Medium', 'Low']
  * ============================================================================
  */
@@ -46,6 +47,7 @@ export const MOCK_INCIDENTS = [
     threat_type: "Brute Force",
     risk_score: 88.5,
     risk_level: "Critical",
+    // PENDING: priority format not yet confirmed by backend (P1-P4 vs Low/Medium/High/Immediate) — do not treat as final, update once contract is locked.
     priority: "P1",
     affected_asset: "DB-Prod-Cluster-01",
     ml_confidence: 94.2,
