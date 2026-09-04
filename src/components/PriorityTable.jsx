@@ -255,7 +255,7 @@ export default function PriorityTable({ incidents = [], loading, error }) {
                   <TableRow
                     key={inc.incident_id}
                     hover
-                    onClick={() => navigate(`/incidents/${inc.incident_id}`)}
+                    onClick={() => navigate(`/dashboard/investigation/${inc.incident_id}`)}
                     sx={{
                       cursor: 'pointer',
                       transition: 'all 0.25s ease',

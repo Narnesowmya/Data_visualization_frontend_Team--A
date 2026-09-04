@@ -3,14 +3,16 @@
  * RISK API SERVICE - INCIDENT INVESTIGATION & RISK DATA ENGINE
  * ============================================================================
  * 
+ * CONFIRMED SCHEMAS / ENUMS:
+ * - status enum values: ['Open', 'Investigating', 'Resolved', 'False Positive'] (Confirmed by Backend)
+ * 
  * Agreed 13-field Incident Schema:
  * {
  *   incident_id, threat_type, risk_score, risk_level, priority,
  *   affected_asset, ml_confidence, related_events, mitre_techniques,
- *   ioc_status, reasons, recommendations, status, [risk_factors, attack_chain, security_intelligence]
+ *   ioc_status, reasons, recommendations, status, [risk_factors, attack_chain, security_intelligence, created_at]
  * }
  * 
- * Status Lifecycle: ['Open', 'Investigating', 'Resolved', 'Closed']
  * Priority Scale: ['P1', 'P2', 'P3', 'P4']
  * Risk Level: ['Critical', 'High', 'Medium', 'Low']
  * ============================================================================
@@ -21,16 +23,23 @@ export const MOCK_INCIDENTS = [
     incident_id: "INC-1001",
     created_at: "2026-08-29T10:15:30Z",
     security_intelligence: {
-      cve_id: "CVE-2024-3809",
-      cvss_score: 9.8,
-      vulnerability_status: "Known Exploited",
+      cve_id: "CVE-2024-30078",
+      cvss_score: 9.2,
+      vulnerability_status: "Open",
       ioc_indicators: [
         {
           type: "IP",
           value: "185.220.101.5",
-          status: "Active",
-          threat_actor: "APT29",
+          status: "Malicious",
+          threat_actor: "APT29 / Midnight Blizzard",
           confidence: "High"
+        },
+        {
+          type: "Account",
+          value: "root",
+          status: "Targeted",
+          threat_actor: "Unknown",
+          confidence: "Medium"
         }
       ]
     },
@@ -99,13 +108,20 @@ export const MOCK_INCIDENTS = [
     created_at: "2026-08-29T09:40:00Z",
     security_intelligence: {
       cve_id: "CVE-2024-21413",
-      cvss_score: 9.1,
+      cvss_score: 9.8,
       vulnerability_status: "Critical Unpatched",
       ioc_indicators: [
         {
           type: "SHA256",
           value: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
           status: "Active",
+          threat_actor: "FIN7",
+          confidence: "High"
+        },
+        {
+          type: "Domain",
+          value: "c2-update-beacon.net",
+          status: "Active C2",
           threat_actor: "FIN7",
           confidence: "High"
         }
@@ -535,7 +551,7 @@ export const MOCK_INCIDENTS = [
 /**
  * Fetch all security incidents with optional filtering.
  * 
- * @param {Object} [filters={}] - Filter criteria (e.g. { status, risk_level })
+ * @param {Object} [filters={}] - Filter criteria (e.g. { status, risk_level, priority, search })
  * @returns {Promise<Array>} List of incident objects matching exact team schema
  */
 export async function getIncidents(filters = {}) {
@@ -581,7 +597,8 @@ export async function getIncidentById(incident_id) {
 }
 
 /**
- * Fetch summary metrics for risk overview cards & distribution.
+ * Dynamically computes summary metrics from MOCK_INCIDENTS.
+ * Derived from the exact same array PriorityTable reads.
  * 
  * @returns {Promise<Object>} Aggregated incident risk counts
  */
