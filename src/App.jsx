@@ -6,6 +6,7 @@ import ThreatIntelligence from './pages/ThreatIntelligence.jsx'
 import Vulnerabilities from './pages/Vulnerabilities.jsx'
 import Analytics from './pages/Analytics.jsx'
 import EventDetails from './pages/EventDetails.jsx'
+import IncidentInvestigationPlaceholder from './pages/IncidentInvestigationPlaceholder.jsx'
 
 function App() {
     return (
@@ -36,6 +37,9 @@ function App() {
 
             {/* Standalone Event Details Page */}
             <Route path="/events/:eventId" element={<EventDetails />} />
+
+            {/* Standalone Incident Investigation Page (Placeholder for Frontend 2) */}
+            <Route path="/incidents/:incidentId" element={<IncidentInvestigationPlaceholder />} />
 
             {/* Default */}
             <Route
