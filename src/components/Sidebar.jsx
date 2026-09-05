@@ -33,7 +33,8 @@ const NAV_ITEMS = [
   { label: 'Security Events', path: '/dashboard/events', icon: FiAlertTriangle, badge: 'LIVE' },
   { label: 'Threat Intelligence', path: '/dashboard/threat-intel', icon: FiShield },
   { label: 'Vulnerabilities', path: '/dashboard/vulnerabilities', icon: FiZap },
-  { label: 'Analytics', path: '/dashboard/analytics', icon: FiBarChart2 }
+  { label: 'Analytics', path: '/dashboard/analytics', icon: FiBarChart2 },
+  { label: 'Correlation', path: '/dashboard/correlation', icon: FiZap }
 ];
 
 export default function Sidebar({ mobileOpen, handleDrawerToggle, collapsed, setCollapsed }) {

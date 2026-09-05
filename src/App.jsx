@@ -6,6 +6,7 @@ import ThreatIntelligence from './pages/ThreatIntelligence.jsx'
 import Vulnerabilities from './pages/Vulnerabilities.jsx'
 import Analytics from './pages/Analytics.jsx'
 import EventDetails from './pages/EventDetails.jsx'
+import Correlation from './pages/Correlation.jsx'
 import IncidentInvestigation from './pages/IncidentInvestigation.jsx'
 
 function App() {
@@ -33,6 +34,9 @@ function App() {
                     path="analytics"
                     element={<Analytics />}
                 />
+                                <Route
+                    path="correlation"
+                    element={<Correlation />}
                 <Route
                     path="investigation/:incidentId"
                     element={<IncidentInvestigation />}
